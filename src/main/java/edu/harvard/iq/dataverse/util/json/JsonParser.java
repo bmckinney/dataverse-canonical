@@ -64,16 +64,22 @@ public class JsonParser {
     }
 
     public Dataverse parseDataverse(JsonObject jobj) throws JsonParseException {
-        Dataverse dv = new Dataverse();
 
+        Dataverse dv = new Dataverse();
         dv.setAlias(getMandatoryString(jobj, "alias"));
         dv.setName(getMandatoryString(jobj, "name"));
         dv.setDescription(jobj.getString("description", null));
         dv.setPermissionRoot(jobj.getBoolean("permissionRoot", false));
         dv.setFacetRoot(jobj.getBoolean("facetRoot", false));
         dv.setAffiliation(jobj.getString("affiliation", null));
-
         dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
+
+        if (jobj.containsKey("theme")) {
+            DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
+            dv.setDataverseTheme(theme);
+            theme.setDataverse(dv);
+        }
+
         if (jobj.containsKey("dataverseType")) {
             for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
                 if (dvtype.name().equalsIgnoreCase(jobj.getString("dataverseType"))) {
@@ -93,12 +99,6 @@ public class JsonParser {
                 dvContactList.add(dvc);
             }
             dv.setDataverseContacts(dvContactList);
-        }
-
-        if (jobj.containsKey("theme")) {
-            DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
-            dv.setDataverseTheme(theme);
-            theme.setDataverse(dv);
         }
 
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
