@@ -557,6 +557,81 @@
    <field name="variablesCHIA" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="weighting" type="text_en" multiValued="false" stored="true" indexed="true"/>
    <field name="westLongitude" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <!-- sbgrid -->
+   <field name="biologicalSample" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="dataType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="collectionDate" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="subjectComposition" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocessingInstructions" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="collectionFacility" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="refinedStructurePDBCode" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="refinedStructurePDBCodeComparable" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <!-- sbgrid diffraction experiment -->
+   <field name="diffractionProtocol" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="ambientTemp" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="wavelength" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="detectorDetails" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="beamSourceType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="detectorType" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="synchrotronSite" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <field name="synchrotronBeamline" type="text_en" multiValued="false" stored="true" indexed="true"/>
+   <!-- sbgrid reprocessing results -->
+   <field name="reprocDataType" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocVersion" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCommand" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocProject" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCrystal" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocSequenceLength" type="int" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocWavelengthText" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocWavelengthNumber" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocSweep" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocFiles" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocImagesStart" type="int" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocImagesEnd" type="int" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocBeamX1" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocBeamX2" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocBeamY1" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocBeamY2" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocDistanceStart" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocDistanceEnd" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocDate" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocTime" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocForText" type="text_en" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocHighResAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocHighResLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocHighResHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocLowResAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocLowResHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocLowResLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCompletenessAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCompletenessLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCompletenessHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocMultiplicityAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocMultiplicityLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocMultiplicityHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocISigmaAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocISigmaLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocISigmaHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocRMergeAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocRMergeHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocRMergeLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCCHalfAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCCHalfLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCCHalfHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocAnomalousCompletenessAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocAnomalousCompletenessLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocAnomalousCompletenessHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocAnomalousMultiplicityAll" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocAnomalousMultiplicityLow" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocAnomalousMultiplicityHigh" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCellLength1" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCellLength2" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCellLength3" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCellAngle1" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCellAngle2" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocCellAngle3" type="float" multiValued="true" stored="true" indexed="true"/>
+   <field name="reprocSpacegroup" type="text_en" multiValued="true" stored="true" indexed="true"/>
+
  </fields>
 
 
@@ -852,6 +927,80 @@
    <copyField source="variablesCHIA" dest="text" maxChars="3000"/>
    <copyField source="weighting" dest="text" maxChars="3000"/>
    <copyField source="westLongitude" dest="text" maxChars="3000"/>
+  <!-- sbgrid -->
+  <copyField source="biologicalSample" dest="text" maxChars="3000"/>
+  <copyField source="dataType" dest="text" maxChars="3000"/>
+  <copyField source="collectionDate" dest="text" maxChars="3000"/>
+  <copyField source="subjectComposition" dest="text" maxChars="3000"/>
+  <copyField source="reprocessingInstructions" dest="text" maxChars="3000"/>
+  <copyField source="collectionFacility" dest="text" maxChars="3000"/>
+  <copyField source="refinedStructurePDBCode" dest="text" maxChars="3000"/>
+  <copyField source="refinedStructurePDBCodeComparable" dest="text" maxChars="3000"/>
+  <!-- sbgrid diffraction experiment -->
+  <copyField source="diffractionProtocol" dest="text" maxChars="3000"/>
+  <copyField source="ambientTemp" dest="text" maxChars="3000"/>
+  <copyField source="wavelength" dest="text" maxChars="3000"/>
+  <copyField source="detectorDetails" dest="text" maxChars="3000"/>
+  <copyField source="beamSourceType" dest="text" maxChars="3000"/>
+  <copyField source="detectorType" dest="text" maxChars="3000"/>
+  <copyField source="synchrotronSite" dest="text" maxChars="3000"/>
+  <copyField source="synchrotronBeamline" dest="text" maxChars="3000"/>
+  <!-- sbgrid reprocessing results -->
+  <copyField source="reprocDataType" dest="text" maxChars="3000"/>
+  <copyField source="reprocVersion" dest="text" maxChars="3000"/>
+  <copyField source="reprocCommand" dest="text" maxChars="3000"/>
+  <copyField source="reprocProject" dest="text" maxChars="3000"/>
+  <copyField source="reprocCrystal" dest="text" maxChars="3000"/>
+  <copyField source="reprocSequenceLength" dest="text" maxChars="3000"/>
+  <copyField source="reprocWavelengthText" dest="text" maxChars="3000"/>
+  <copyField source="reprocWavelengthNumber" dest="text" maxChars="3000"/>
+  <copyField source="reprocSweep" dest="text" maxChars="3000"/>
+  <copyField source="reprocFiles" dest="text" maxChars="3000"/>
+  <copyField source="reprocImagesStart" dest="text" maxChars="3000"/>
+  <copyField source="reprocImagesEnd" dest="text" maxChars="3000"/>
+  <copyField source="reprocBeamX1" dest="text" maxChars="3000"/>
+  <copyField source="reprocBeamX2" dest="text" maxChars="3000"/>
+  <copyField source="reprocBeamY1" dest="text" maxChars="3000"/>
+  <copyField source="reprocBeamY2" dest="text" maxChars="3000"/>
+  <copyField source="reprocDistanceStart" dest="text" maxChars="3000"/>
+  <copyField source="reprocDistanceEnd" dest="text" maxChars="3000"/>
+  <copyField source="reprocDate" dest="text" maxChars="3000"/>
+  <copyField source="reprocTime" dest="text" maxChars="3000"/>
+  <copyField source="reprocForText" dest="text" maxChars="3000"/>
+  <copyField source="reprocHighResAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocHighResLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocHighResHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocLowResAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocLowResHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocLowResLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocCompletenessAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocCompletenessLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocCompletenessHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocMultiplicityAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocMultiplicityLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocMultiplicityHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocISigmaAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocISigmaLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocISigmaHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocRMergeAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocRMergeHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocRMergeLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocCCHalfAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocCCHalfLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocCCHalfHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocAnomalousCompletenessAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocAnomalousCompletenessLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocAnomalousCompletenessHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocAnomalousMultiplicityAll" dest="text" maxChars="3000"/>
+  <copyField source="reprocAnomalousMultiplicityLow" dest="text" maxChars="3000"/>
+  <copyField source="reprocAnomalousMultiplicityHigh" dest="text" maxChars="3000"/>
+  <copyField source="reprocCellLength1" dest="text" maxChars="3000"/>
+  <copyField source="reprocCellLength2" dest="text" maxChars="3000"/>
+  <copyField source="reprocCellLength3" dest="text" maxChars="3000"/>
+  <copyField source="reprocCellAngle1" dest="text" maxChars="3000"/>
+  <copyField source="reprocCellAngle2" dest="text" maxChars="3000"/>
+  <copyField source="reprocCellAngle3" dest="text" maxChars="3000"/>
+  <copyField source="reprocSpacegroup" dest="text" maxChars="3000"/>
 
    <!-- copy name to alphaNameSort, a field designed for sorting by name -->
    <!-- <copyField source="name" dest="alphaNameSort"/> -->
