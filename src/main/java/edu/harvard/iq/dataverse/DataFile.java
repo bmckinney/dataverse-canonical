@@ -609,7 +609,16 @@ public class DataFile extends DvObject {
     public String getDisplayName() {
         // @todo should we show the published version label instead?
         // currently this method is not being used
-        return getLatestFileMetadata().getLabel();
+        //return getLatestFileMetadata().getLabel();
+
+        // use storage location, relative to the dataset folder
+        String name = this.fileSystemName;
+        String dsId = this.getOwner().getIdentifier();
+        int dsIndex = name.indexOf(dsId);
+        if (dsIndex > 0) {
+            name = name.substring(dsIndex + dsId.length() + 1);
+        }
+        return name;
     }
     
     /**
