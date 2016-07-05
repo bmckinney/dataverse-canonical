@@ -612,22 +612,7 @@ public class DataFile extends DvObject {
         // @todo should we show the published version label instead?
         // currently this method is not being used
         //return getLatestFileMetadata().getLabel();
-
-        try {
-            // use storage location, relative to the dataset folder
-            String name = this.fileSystemName;
-            String dsId = this.getOwner().getIdentifier();
-            int dsIndex = name.indexOf(dsId);
-            if (dsIndex > 0) {
-                name = name.substring(dsIndex + dsId.length() + 1);
-            }
-            return name;
-        } catch (StringIndexOutOfBoundsException ex) {
-            Logger.getLogger(DataFile.class.getName()).log(Level.SEVERE,
-                    "Can't generate display name for: " + this.fileSystemName + " - " + this.getOwner().getIdentifier(),
-                    ex);
-            return getLatestFileMetadata().getLabel();
-        }
+        return this.fileSystemName;
     }
     
     /**
