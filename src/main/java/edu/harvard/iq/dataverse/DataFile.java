@@ -16,6 +16,8 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -611,14 +613,21 @@ public class DataFile extends DvObject {
         // currently this method is not being used
         //return getLatestFileMetadata().getLabel();
 
-        // use storage location, relative to the dataset folder
-        String name = this.fileSystemName;
-        String dsId = this.getOwner().getIdentifier();
-        int dsIndex = name.indexOf(dsId);
-        if (dsIndex > 0) {
-            name = name.substring(dsIndex + dsId.length() + 1);
+        try {
+            // use storage location, relative to the dataset folder
+            String name = this.fileSystemName;
+            String dsId = this.getOwner().getIdentifier();
+            int dsIndex = name.indexOf(dsId);
+            if (dsIndex > 0) {
+                name = name.substring(dsIndex + dsId.length() + 1);
+            }
+            return name;
+        } catch (StringIndexOutOfBoundsException ex) {
+            Logger.getLogger(DataFile.class.getName()).log(Level.SEVERE,
+                    "Can't generate display name for: " + this.fileSystemName + " - " + this.getOwner().getIdentifier(),
+                    ex);
+            return getLatestFileMetadata().getLabel();
         }
-        return name;
     }
     
     /**
