@@ -21,7 +21,7 @@
         <ui:param name="locked" value="#{DatasetPage.locked}"/>
         <ui:param name="showMessagePanel" value="#{true}"/>
         <ui:define name="body">
-                <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
+            <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
             <f:metadata>
                 <f:viewParam name="id" value="#{DatasetPage.dataset.id}"/>
                 <f:viewParam name="ownerId" value="#{DatasetPage.ownerId}"/>
@@ -38,7 +38,7 @@
                 <!-- Header / Button Panel -->
                 <!-- View editMode -->
                 <div id="topDatasetBlock" jsf:rendered="#{empty DatasetPage.editMode}">
-                        <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
+                    <div id="actionButtonBlock" class="button-block clearfix" jsf:rendered="#{!widgetWrapper.widgetView}">
                         <!-- Edit/Publish Button Group -->
                         <!-- Edit Button -->
                         <div class="btn-group pull-right" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
@@ -106,7 +106,7 @@
                                         <p:commandLink id="deaccessionDatasetLink" onclick="PF('deaccessionBlock').show()"
                                                        action="#{DatasetPage.updateReleasedVersions()}"
                                                        oncomplete="PF('deaccessionBlock').show();bind_bsui_components();"
-                                                           update="deaccessionBlock">
+                                                       update="deaccessionBlock">
                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deaccession']}" />
                                         </p:commandLink>
                                     </li>
@@ -577,6 +577,15 @@
                     <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
                         <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+
+                        <p:tab id="visualizationTab" title="Visualization"
+                               jsf:rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
+                            <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500" width="1100" style="border:none"></iframe>
+                            <!--
+                            <ui:include src="visualizationFragment.xhtml"/>
+                             -->
+                        </p:tab>
+
                         <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode)}">
                             <ui:include src="filesFragment.xhtml"/>
