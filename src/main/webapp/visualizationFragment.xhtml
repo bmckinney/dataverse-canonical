@@ -117,14 +117,15 @@
     
   		 
 		  <script type="text/javascript">
-		    var element = document.getElementById('gl');
+			  var pdbid = "#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}";
+			  var element = document.getElementById('gl');
 		  	var viewer = pv.Viewer(element, 
 		                       { quality : 'high', width: 'auto', height : 'auto',
 		                         antialias : true, outline : true});
 		
-		    function load(pdbId) {
-		      document.getElementById('status').innerHTML ='loading 5DDK';
-		      pv.io.fetchPdb('pdb/5DDK.pdb', function(structure) {
+		    function load(id) {
+		      document.getElementById('status').innerHTML ='loading ' + id;
+		      pv.io.fetchPdb('pdb/' + id + '.pdb', function(structure) {
 		        window.structure = structure;
 		        preset();
 		        viewer.centerOn(structure);
@@ -133,7 +134,7 @@
 		    }
 		
 		    function loadProtein() {
-		      load('5DDK');
+		      load(pdbid);
 		    }
 		    function lines() {
 		      viewer.clear();
