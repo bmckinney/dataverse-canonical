@@ -1,0 +1,59 @@
+#metadataBlock	name	dataverseAlias	displayName
+	sbgridReproc	sbgridReproc	Reprocessing Data
+#datasetField	name	title	description	watermark	fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+	reproc	Reprocessing Data			none	0		FALSE	FALSE	TRUE	FALSE	TRUE	FALSE		sbgridReproc
+	reprocDataType	Data type			text	1	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocVersion	Version			text	2	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCommand	Command			text	3	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocProject	Project			text	4	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCrystal	Crystal			text	5	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocSequenceLength	Sequence lenth			int	6	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocWavelengthText	Wavelength text			text	7	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocWavelengthNumber	Wavelength number			float	8	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocSweep	Sweep			text	9	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocFiles	Files			text	10	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocImagesStart	Images start			int	11	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocImagesEnd	Images end			int	12	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocBeamX1	Beamline X1			float	13	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocBeamY1	Beamline Y1			float	14	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocBeamX2	Beamline X2			float	15	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocBeamY2	Beamline Y2			float	16	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocDistanceStart	Distance start			float	17	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocDistanceEnd	Distance end			float	18	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocDate	Date			date	19	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocTime	Time			text	20	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocForText	For text			text	21	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocHighResAll	High resolution (All)			float	22	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocHighResLow	High resolution (Low)			float	23	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocHighResHigh	High resolution (High)			float	24	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocLowResAll	Low resolution (All)			float	25	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocLowResLow	Low resolution (Low)			float	26	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocLowResHigh	Low resolution (High)			float	27	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCompletenessAll	Completeness (All)			float	28	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCompletenessLow	Completeness (Low)			float	29	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCompletenessHigh	Completeness (High)			float	30	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocMultiplicityAll	Multiplicity (All)			float	31	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocMultiplicityLow	Multiplicity (Low)			float	32	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocMultiplicityHigh	Multiplicity (High)			float	33	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocISigmaAll	I/sigma (All)			float	34	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocISigmaLow	I/sigma (Low)			float	35	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocISigmaHigh	I/sigma (High)			float	36	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocRMergeAll	Rmerge (All)			float	37	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocRMergeLow	Rmerge (Low)			float	38	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocRMergeHigh	Rmerge (High)			float	39	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCCHalfAll	CC half (All)			float	40	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCCHalfLow	CC half (Low)			float	41	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCCHalfHigh	CC half (High)			float	42	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocAnomalousCompletenessAll	Anomalous completeness (All)			float	43	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocAnomalousCompletenessLow	Anomalous completeness (Low)			float	44	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocAnomalousCompletenessHigh	Anomalous completeness (High)			float	45	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocAnomalousMultiplicityAll	Anomalous multiplicity (All)			float	46	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocAnomalousMultiplicityLow	Anomalous multiplicity (Low)			float	47	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocAnomalousMultiplicityHigh	Anomalous multiplicity (High)			float	48	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCellLength1	Cell length 1			float	49	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCellLength2	Cell length 2			float	50	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCellLength3	Cell length 3			float	51	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCellAngle1	Cell angle 1			float	52	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCellAngle2	Cell angle 2			float	53	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocCellAngle3	Cell angle 3			float	54	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc
+	reprocSpacegroup	Spacegroup			text	55	#VALUE	FALSE	FALSE	FALSE	FALSE	FALSE	FALSE	reproc	sbgridReproc

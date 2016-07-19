@@ -81,15 +81,15 @@
 	accessToSources	Documentation and Access to Sources	Level of documentation of the original sources.		textbox	77		FALSE	FALSE	FALSE	FALSE	FALSE	FALSE		citation
 	dataType	Data Type	We currently support X-ray diffraction datasets. If you would like to deposit any other dataset type please contact us first.		text	77		TRUE	TRUE	FALSE	TRUE	TRUE	FALSE		citation
 #controlledVocabulary	DatasetField	Value	identifier	displayOrder
-	subject	Agricultural Sciences	D01	0											
+	subject	Agricultural Sciences	D01	0
 	subject	Arts and Humanities	D0	1											
 	subject	Astronomy and Astrophysics	D1	2											
 	subject	Business and Management	D2	3											
 	subject	Chemistry	D3	4
-	subject	Computer and Information Science	D7	5									
-	subject	Earth and Environmental Sciences	D4	6											
+	subject	Computer and Information Science	D7	5
+	subject	Earth and Environmental Sciences	D4	6
 	subject	Engineering	D5	7
-	subject	Law	D8	8	
+	subject	Law	D8	8
 	subject	Mathematical Sciences	D9	9																	
 	subject	Medicine, Health and Life Sciences	D6	10											
 	subject	Physics	D10	11											
@@ -316,7 +316,7 @@
 	language	Yoruba		181											
 	language	Zhuang, Chuang		182											
 	language	Zulu		183											
-	language	Not applicable		184											
+	language	Not applicable		184
 	dataType	X-Ray Diffraction	xray	0
 	dataType	Structural Model	sm	1
 	dataType	Micro-Electron Diffraction	me	2

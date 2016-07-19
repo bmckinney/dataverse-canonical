@@ -1,0 +1,44 @@
+#metadataBlock	name	dataverseAlias	displayName
+	diffractionExperiment	diffractionExperiment	X-Ray Diffraction Experiment
+#datasetField	name	title	description	watermark	 fieldType	displayOrder	displayFormat	advancedSearchField	allowControlledVocabulary	allowmultiples	facetable	showabovefold	required	parent	metadatablock_id
+	diffractionProtocol	Diffraction Protocol	Please indicate the diffraction protocol.		text	0		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	ambientTemp	Ambient Temperature	Please indicate the ambient temperature.		text	1		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	wavelength	Wavelength List	Please indicate the wavelength list.		text	2		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	detectorDetails	Detector Details	Please provide any detector details.		textbox	3		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	beamSourceType	Beam Source Type	Please indicate beam source type.		text	4		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	detectorType	Detector Type 	Please indicate detector type.		text	5		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	synchrotronSite	Synchrotron Site	Please indicate synchrotron site.		text	6		TRUE	TRUE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+	synchrotronBeamline	Synchrotron Beamline	Please indicate synchrotron beamline.		text	7		TRUE	FALSE	FALSE	FALSE	TRUE	FALSE		diffractionExperiment
+#controlledVocabulary	DatasetField	Value	identifier	displayOrder
+	synchrotronSite	ALS - The Advanced Light Source	als	0
+	synchrotronSite	APS - The Advanced Photon Source	aps	1
+	synchrotronSite	CAMD - The Center for Advanced Microstructures and Device	camd	2
+	synchrotronSite	CHESS - Cornell High Energy Synchrotron Source	chess	3
+	synchrotronSite	CLSI - Canadian Light Source Inc.	cls	4
+	synchrotronSite	LCLS - Linac Coherent Light Source	lcls	5
+	synchrotronSite	LNLS - LNLS	lnls	6
+	synchrotronSite	NSLS - National Synchrotron Light Source	nsls	7
+	synchrotronSite	SSRL - Stanford Synchrotron Radiation Lightsource	ssrl	8
+	synchrotronSite	ALBA - ALBA	alba	9
+	synchrotronSite	BESSY - Berlin Electron Storage ring company for SYnchrotron radiation	bessy	10
+	synchrotronSite	DIAMOND - Diamond Light Source	diamond	11
+	synchrotronSite	ELETTRA - Elettra	elettra	12
+	synchrotronSite	EMBLDESY - EMBL/DESY	embldesy	13
+	synchrotronSite	ESRF - European Synchrotron Radiation Facility	esrf	14
+	synchrotronSite	KCSRNT - Kurchatov Center for Synchrotron Radiation and Nanotechnology	kcsrnt	15
+	synchrotronSite	MAX_II - MAXLab	maxii	16
+	synchrotronSite	MPGDESY - MPG/DESY	mpgdesy	17
+	synchrotronSite	PETRA_III - PETRA III	petraiii	18
+	synchrotronSite	SLSPSI - Swiss Light Source	slspsi	19
+	synchrotronSite	SOLEIL - SOLEIL	soleil	20
+	synchrotronSite	SRS - Synchrotron Radiation Source	srs	21
+	synchrotronSite	AUSTRALIAN - Australian Synchrotron	australian	22
+	synchrotronSite	BSRF - BSRF	bsrf	23
+	synchrotronSite	NSRRC - National Synchroton Radiation Research Center	nsrrc	24
+	synchrotronSite	PAL - Pohang Accelerator Laboratory	pal	25
+	synchrotronSite	PF - Photon Factory	pf	26
+	synchrotronSite	RRCAT - Raja Ramanna Centre for Advanced Technology, Indus-2	rrcat	27
+	synchrotronSite	SACLA - SACLA, Japan's First X-ray Free Electron Laser (XFEL) facility	sacla	28
+	synchrotronSite	SLRI - Synchrotron Light Research Institute	slri	29
+	synchrotronSite	SPRING8 - Super Photon ring 8 GeV	spring8	30
+	synchrotronSite	SSRF - Shanghai Synchrotron Radiation Facility	ssrf	31
