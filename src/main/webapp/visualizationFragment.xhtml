@@ -81,7 +81,7 @@
 
     <br></br>
  
-    	<div class="panel-group">
+    <div class="panel-group">
     	<div class="panel panel-default">
 			<div class="container">
 			  <div class="row">
@@ -89,7 +89,6 @@
 			      <div id="gl"></div>
 			      <div id="inspector">        
 			        
-			         
 			        <h2>Choose Style:</h2>
 			        <ul>
 			          <li id="preset">Preset</li>
@@ -108,80 +107,95 @@
 			  </div>
 			</div>	
  
-</div>
-</div>
+		</div>
+	</div>
 		
 		
-		<script type="text/javascript" src="#{resource['js/pv/bio-pv.min.js']}?version=#{systemConfig.getVersion()}"></script>
-  		<script type="text/javascript" src="#{resource['js/pv/formset.js']}?version=#{systemConfig.getVersion()}"></script>
-    
-  		 
-		  <script type="text/javascript">
-			  var pdbid = "#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}";
-			  var element = document.getElementById('gl');
-		  	var viewer = pv.Viewer(element, 
-		                       { quality : 'high', width: 'auto', height : 'auto',
-		                         antialias : true, outline : true});
+	<script type="text/javascript" src="#{resource['js/pv/bio-pv.min.js']}?version=#{systemConfig.getVersion()}"></script>
+  	<script type="text/javascript" src="#{resource['js/pv/formset.js']}?version=#{systemConfig.getVersion()}"></script>
+  	<script type="text/javascript" src="#{resource['js/pv/gunzip.min.js']}?version=#{systemConfig.getVersion()}"></script>
+		  
 		
-		    function load(id) {
-		      document.getElementById('status').innerHTML ='loading ' + id;
-		      pv.io.fetchPdb('pdb/' + id + '.pdb', function(structure) {
-		        window.structure = structure;
-		        preset();
-		        viewer.centerOn(structure);
-		      });
-		      document.getElementById('status').innerHTML = '';
-		    }
+	<script type="text/javascript">
+		// added if/else for local testing so there is always a PDB available
+/*  		if(document.getElementById('data-pdb') != null) {
+			var pdbid = window.frameElement.getAttribute('data-pdb');
+		} 
+ 		else {
+ 			var pdbid = "5DDK";
+ 		} */
 		
-		    function loadProtein() {
-		      load(pdbid);
-		    }
-		    function lines() {
-		      viewer.clear();
-		      viewer.lines('structure', structure);
-		    }
-		    function cartoon() {
-		      viewer.clear();
-		      viewer.cartoon('structure', structure, { color: color.ssSuccession() });
-		    }
-		    function lineTrace() {
-		      viewer.clear();
-		      viewer.lineTrace('structure', structure);
-		    }
-		    function sline() {
-		      console.log("IN SLINE");
-		      viewer.clear();
-		      viewer.sline('structure', structure);
-		    }
-		    function tube() {
-		      viewer.clear();
-		      viewer.tube('structure', structure);
-		    }
-		    function trace() {
-		      viewer.clear();
-		      viewer.trace('structure', structure);
-		    }
-		    function preset() {
-		      viewer.clear();
-		      var ligand = structure.select({rnames : ['RVP', 'SAH']});
-		      viewer.ballsAndSticks('ligand', ligand);
-		      viewer.cartoon('protein', structure);
-		      // adapt zoom level to contain the whole structure
-		      viewer.autoZoom();
-		    }
+		// usually just use this
+ 		var pdbid = window.frameElement.getAttribute('data-pdb');
 		
-		    document.getElementById('cartoon').onclick = cartoon;
-		    document.getElementById('line-trace').onclick = lineTrace;
-		    document.getElementById('preset').onclick = preset;
-		    document.getElementById('lines').onclick = lines;
-		    document.getElementById('trace').onclick = trace;
-		    document.getElementById('sline').onclick = sline;
-		    document.getElementById('tube').onclick = tube;
-/* 		    window.onresize = function(event) {
-		      pv.fitParent();
-		    } */
-		    document.addEventListener('DOMContentLoaded', loadProtein);
-		  </script>
+		var folder = pdbid.charAt(1).concat(pdbid.charAt(2));
+		var url = 'pdb/' + folder + '/' + pdbid + '.pdb.gz';
+
+		
+        var element = document.getElementById('gl');
+        var viewer = pv.Viewer(element, 
+                            { quality : 'high', width: 'auto', height : 'auto',
+                              antialias : true, outline : true});
+      
+        function load(pdbid) {
+            document.getElementById('status').innerHTML ='loading ' + pdbid;
+            pv.io.fetchPdb(url, function(structure) {
+              window.structure = structure;
+              preset();
+              viewer.centerOn(structure);
+            });
+            document.getElementById('status').innerHTML = '';
+        }
+      
+        function loadProtein() {
+            load(pdbid);
+        }
+        function lines() {
+            viewer.clear();
+            viewer.lines('structure', structure);
+        }
+        function cartoon() {
+            viewer.clear();
+            viewer.cartoon('structure', structure, { color: color.ssSuccession() });
+        }
+        function lineTrace() {
+            viewer.clear();
+            viewer.lineTrace('structure', structure);
+        }
+        function sline() {
+            console.log("IN SLINE");
+            viewer.clear();
+            viewer.sline('structure', structure);
+        }
+        function tube() {
+            viewer.clear();
+            viewer.tube('structure', structure);
+        }
+        function trace() {
+            viewer.clear();
+            viewer.trace('structure', structure);
+        }
+        function preset() {
+            viewer.clear();
+            var ligand = structure.select({rnames : ['RVP', 'SAH']});
+            viewer.ballsAndSticks('ligand', ligand);
+            viewer.cartoon('protein', structure);
+            viewer.autoZoom();
+        }
+      
+        document.getElementById('cartoon').onclick = cartoon;
+        document.getElementById('line-trace').onclick = lineTrace;
+        document.getElementById('preset').onclick = preset;
+        document.getElementById('lines').onclick = lines;
+        document.getElementById('trace').onclick = trace;
+        document.getElementById('sline').onclick = sline;
+        document.getElementById('tube').onclick = tube;
+/*            window.onresize = function(event) {
+            pv.fitParent();
+          } */
+        document.addEventListener('DOMContentLoaded', loadProtein);
+     </script>
+         
 
 
 </ui:composition>
