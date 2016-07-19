@@ -688,4 +688,36 @@ public class Dataverses extends AbstractApiBean {
         }
     }
 
+    @GET
+    @Path("{identifier}/uploadmechanisms")
+    public Response listUploadMechanisms( @PathParam("identifier") String dvIdtf ) {
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder fileUploadMechanismsEnabledArray = Json.createArrayBuilder();
+            String fileUploadMechanismsEnabledString = dv.getFileUploadMechanisms();
+            if (fileUploadMechanismsEnabledString != null) {
+                for (String mech : fileUploadMechanismsEnabledString.split(":")) {
+                    fileUploadMechanismsEnabledArray.add(mech);
+                }
+            }
+            return okResponse(fileUploadMechanismsEnabledArray);
+        } catch (WrappedResponse ex) {
+            return ex.refineResponse( "Error listing file upload mechanisms for dataverse " + dvIdtf + ":");
+        }
+    }
+
+    @POST
+    @Path("{identifier}/uploadmechanisms")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setUploadMechanisms( @PathParam("identifier")String dvIdtf, String mechs ) {
+        try {
+            // TODO: 7/19/16 should be command execution with user permission check.
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            dv.setFileUploadMechanisms(mechs);
+            return okResponse("File upload mechanisms of dataverse " + dvIdtf + " updated.");
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
 }
