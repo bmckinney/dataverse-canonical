@@ -1,19 +1,19 @@
 <ui:composition
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:pt="http://java.sun.com/jsf/passthrough"
-    xmlns:cc="http://java.sun.com/jsf/composite"
-    xmlns:o="http://omnifaces.org/ui"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+        xmlns:jsf="http://xmlns.jcp.org/jsf"
+        xmlns:pt="http://java.sun.com/jsf/passthrough"
+        xmlns:cc="http://java.sun.com/jsf/composite"
+        xmlns:o="http://omnifaces.org/ui"
+        xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
     <!-- Upload (removed - L.A. 4.2) -->
     <!-- Files Table -->
-    <p:dataTable id="filesTable" 
+    <p:dataTable id="filesTable"
                  scrollRows="25" scrollable="true" liveScroll="true"
                  scrollHeight="92%" scrollWidth="100%" style="margin-right:1px;"
                  value="#{DatasetPage.sortButtonEnabled ? DatasetPage.fileMetadatas : DatasetPage.fileMetadatasSearch}"
@@ -67,33 +67,33 @@
                             </button>
                             <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                                 <li class="#{DatasetPage.locked ? 'disabled' : ''}">
-                                    <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile"> 
+                                    <p:commandLink onclick="testFilesSelectedForDelete();" id="deleteSelectedFile">
                                         <h:outputText value="#{bundle['file.delete']}"/>
                                     </p:commandLink>
                                 </li>
                                 <li class="#{DatasetPage.locked ? 'disabled' : ''}">
-                                    <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">                                         
+                                    <p:commandLink onclick="testFilesSelectedForEditMetadata();" id="editMetadataSelectedFile" action="#{DatasetPage.editFileMetadata()}">
                                         <h:outputText value="#{bundle['file.metadata']}"/>
                                     </p:commandLink>
                                 </li>
                                 <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
-                                    <p:commandLink oncomplete="toggle_dropdown();" 
+                                    <p:commandLink oncomplete="toggle_dropdown();"
                                                    onclick="testFilesSelectedForRestriction()">
                                         <h:outputText value="#{bundle['file.restrict']}"/>
                                     </p:commandLink>
                                 </li>
                                 <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
-                                    <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();" 
+                                    <p:commandLink update=":datasetForm,,:messagePanel" oncomplete="toggle_dropdown();"
                                                    action="#{DatasetPage.restrictSelectedFiles(false)}">
                                         <h:outputText value="#{bundle['file.unrestrict']}"/>
                                     </p:commandLink>
                                 </li>
                                 <li class="#{DatasetPage.locked  ? 'disabled' : ''}">
-                                    <p:commandLink id="fileCategoriesLinkTwo"    
+                                    <p:commandLink id="fileCategoriesLinkTwo"
                                                    onclick="testFilesSelectedForTags()">
-                                        #{bundle['file.tags']} 
-                                    </p:commandLink>    
-                                </li>                                                               
+                                        #{bundle['file.tags']}
+                                    </p:commandLink>
+                                </li>
                             </ul>
                             <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                         </div>
@@ -116,7 +116,7 @@
                             </p:commandLink>
                         </div>
                         <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
-                                       type="button" styleClass="btn btn-default"                                   
+                                       type="button" styleClass="btn btn-default"
                                        update="@form" action="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"
                                        disabled="#{DatasetPage.locked}">
                             <span class="glyphicon glyphicon-bullhorn"/> #{bundle['file.requestAccess']}
@@ -245,10 +245,10 @@
         </p:column>
         <p:column class="col-file-metadata">
             <h:outputLink rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}"
-                            value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
-                <h:outputText id="fileNameLink" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"/>
-            </h:outputLink>              
-            <h:outputText id="fileName" value="#{fileMetadata.label}" style="display:block;font-weight:bold;"
+                          value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
+                <h:outputText id="fileNameLink" value="#{fileMetadata.dataFile.getDisplayName()}" style="display:block;font-weight:bold;"/>
+            </h:outputLink>
+            <h:outputText id="fileName" value="#{fileMetadata.dataFile.getDisplayName()}" style="display:block;font-weight:bold;"
                           rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}"/>
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
@@ -282,7 +282,7 @@
                 <ui:fragment rendered="#{!(empty fileMetadata.categories)}">
                     <ui:repeat value="#{fileMetadata.categories}" var="cat">
                         <h:outputText value="#{cat.name}" styleClass="label label-default"/>
-                    </ui:repeat> 
+                    </ui:repeat>
                 </ui:fragment>
                 <ui:fragment >
                     <ui:repeat value="#{fileMetadata.dataFile.tags}" var="tag">
@@ -291,7 +291,7 @@
                 </ui:fragment>
             </div>
             <ui:fragment rendered="#{DatasetPage.isGeoconnectDebugAvailable()}">
-            <!-- query to add sample map data to a tabular file -->
+                <!-- query to add sample map data to a tabular file -->
                 <ui:include src="filesFragmentWorldMapTestQuery.xhtml"/>
             </ui:fragment>
 
@@ -310,7 +310,7 @@
                         <span class="glyphicon glyphicon-warning-sign text-danger"/>
                     </span>
                 </ui:fragment>
-                
+
                 <!-- Explore Dropdown: When TwoRavens **AND** WorldMap Explore options are available -->
                 <div class="btn-group" jsf:rendered="#{DatasetPage.canSeeTwoRavensExploreButton(fileMetadata) and DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -319,25 +319,25 @@
                     <ul class="dropdown-menu multi-level pull-right text-left" role="menu">
                         <li><!-- Two Ravens -->
                             <h:commandLink rendered="#{!DatasetPage.downloadPopupRequired}"
-                                            styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                            disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
-                                            actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
-                                    TwoRavens
+                                           styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                           disabled="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                           actionListener="#{DatasetPage.exploreOutputLink(fileMetadata, 'explore')}" target="_blank">
+                                TwoRavens
                             </h:commandLink>
-                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"                                            
-                                            action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
-                                            update="@form"
-                                            oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
-                                    TwoRavens
-                            </p:commandLink>                          
+                            <p:commandLink rendered="#{DatasetPage.downloadPopupRequired}"
+                                           action="#{DatasetPage.initGuestbookResponse(fileMetadata, 'explore')}"
+                                           update="@form"
+                                           oncomplete="PF('downloadPopup').show();handleResizeDialog('downloadPopup');">
+                                TwoRavens
+                            </p:commandLink>
                         </li>
                         <li><!-- WorldMap Explore -->
                             <h:outputLink rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
-                                            styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"  
-                                            value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
-                                  #{bundle['file.mapData.viewMap']}
+                                          styleClass="#{fileMetadata.dataFile.ingestInProgress ? 'disabled' : ''}"
+                                          value="#{ DatasetPage.getMapLayerMetadata(fileMetadata.dataFile).getLayerLink() }" target="_blank">
+                                #{bundle['file.mapData.viewMap']}
                             </h:outputLink>
-                        </li>                       
+                        </li>
                     </ul>
                 </div>
 
@@ -357,7 +357,7 @@
                         <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
                     </p:commandLink>
                 </ui:fragment>
-                
+
                 <!-- WorldMap Explore button ONLY ... not TwoRavens -->
                 <ui:fragment rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata) and !(DatasetPage.canSeeTwoRavensExploreButton(fileMetadata))}">
                     <h:outputLink pt:role="button" rendered="#{DatasetPage.canUserSeeExploreWorldMapButton(fileMetadata)}"
@@ -365,7 +365,7 @@
                         <span class="glyphicon glyphicon-equalizer"/> #{bundle.explore}
                     </h:outputLink>
                 </ui:fragment>
-                    
+
                 <!-- WorldMap Map Data button group -->
                 <!-- 4.2.1: VERIFIED: none of these checks add any queries, if there are no map layers. -->
                 <div class="btn-group" role="group" jsf:rendered="#{DatasetPage.canUserSeeMapDataButton(fileMetadata) or DatasetPage.canSeeMapButtonReminderToPublish(fileMetadata)}">
@@ -523,11 +523,11 @@
                                onclick="PF('accessSignUpLogIn_popup').show()">
                     <span class="glyphicon glyphicon-bullhorn"/> #{fileMetadata.dataFile.fileAccessRequesters.contains(dataverseSession.user) ? bundle['file.accessRequested'] : bundle['file.requestAccess']}
                 </p:commandLink>
-                
-             
+
+
             </div>
             <!-- END: button-block -->
         </p:column>
     </p:dataTable>
-    
+
 </ui:composition>

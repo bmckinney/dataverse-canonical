@@ -16,6 +16,8 @@ import java.util.Objects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -609,7 +611,8 @@ public class DataFile extends DvObject {
     public String getDisplayName() {
         // @todo should we show the published version label instead?
         // currently this method is not being used
-        return getLatestFileMetadata().getLabel();
+        //return getLatestFileMetadata().getLabel();
+        return this.fileSystemName;
     }
     
     /**
