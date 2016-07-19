@@ -5,12 +5,12 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
-import org.apache.commons.io.FileUtils;
+import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.JobListener;
@@ -25,7 +25,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.File;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
@@ -38,6 +37,8 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
     private static final Logger logger = Logger.getLogger(FileRecordJobListener.class.getName());
 
+    private static final UserNotification.Type notifyType = UserNotification.Type.FILESYSTEMIMPORT;
+
     @Inject
     private JobContext jobContext = null;
 
@@ -49,7 +50,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
     private String logDir;
 
     @EJB
-    UserNotificationServiceBean notificationService;
+    UserNotificationServiceBean notificationServiceBean;
 
     @EJB
     AuthenticationServiceBean authenticationServiceBean;
@@ -58,18 +59,19 @@ public class FileRecordJobListener implements StepListener, JobListener {
     ActionLogServiceBean actionLogServiceBean;
 
     @EJB
-    DatasetServiceBean datasetService;
+    DatasetServiceBean datasetServiceBean;
+
+    @EJB
+    UserServiceBean userServiceBean;
 
     @Override
     public void afterStep() throws Exception {
-        System.out.println("FileRecordJobListener::afterStep");
-
+        // no-op
     }
 
     @Override
     public void beforeStep() throws Exception {
-        System.out.println("FileRecordJobListener::beforeStep");
-
+        // no-op
     }
 
     @Override
@@ -79,7 +81,6 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
     @Override
     public void afterJob() throws Exception {
-
         doReport();
         logger.log(Level.INFO, "After Job {0}, instance {1} and execution {2}, batch status [{3}], exit status [{4}]",
                 new Object[]{jobContext.getJobName(), jobContext.getInstanceId(), jobContext.getExecutionId(),
@@ -90,29 +91,58 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
         try {
 
-            // create job json
-            String jobJson;
-            JobExecution jobExecution = BatchRuntime.getJobOperator().getJobExecution(jobContext.getInstanceId());
-            if (jobExecution != null) {
-                JobExecutionEntity jobExecutionEntity = JobExecutionEntity.create(jobExecution);
-                ObjectMapper mapper = new ObjectMapper();
+            JobOperator jobOperator = BatchRuntime.getJobOperator();
 
-                // job exit status and end time are null at the moment (we're still inside a job)
-                // set the entity properties as if the job was complete
+            String jobJson;
+            String userId;
+            String datasetId;
+            Long datasetVersionId;
+            String jobId = Long.toString(jobContext.getInstanceId());
+
+            // determine user and dataset IDs based on job params
+            Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
+            if (jobParams.containsKey("datasetPrimaryKey") && jobParams.containsKey("userPrimaryKey")) {
+                datasetId = datasetServiceBean.find(Long.parseLong(jobParams.getProperty("datasetPrimaryKey"))).getGlobalId();
+                userId = userServiceBean.find(Long.parseLong(jobParams.getProperty("userPrimaryKey"))).getIdentifier();
+            } else if (jobParams.containsKey("datasetId") && jobParams.containsKey("userId")) {
+                datasetId = jobParams.getProperty("datasetId");
+                userId = jobParams.getProperty("userId");
+            } else {
+                logger.log(Level.SEVERE, "Unable to report job since there are no job params for user and/or dataset.");
+                return;
+            }
+
+            AuthenticatedUser user = authenticationServiceBean.getAuthenticatedUser(userId);
+            if (user == null) {
+                logger.log(Level.SEVERE, "Cannot find authenticated user with ID: " + userId);
+                return;
+            }
+
+            Dataset dataset = datasetServiceBean.findByGlobalId(datasetId);
+            if (dataset == null) {
+                logger.log(Level.SEVERE, "Cannot find dataset with ID: " + datasetId);
+                return;
+            }
+            datasetVersionId = dataset.getLatestVersion().getId();
+
+            JobExecution jobExecution = jobOperator.getJobExecution(jobContext.getInstanceId());
+            if (jobExecution != null) {
+
+                Date date = new Date();
+                Timestamp timestamp =  new Timestamp(date.getTime());
+
+                JobExecutionEntity jobExecutionEntity = JobExecutionEntity.create(jobExecution);
                 jobExecutionEntity.setExitStatus("COMPLETED");
                 jobExecutionEntity.setStatus(BatchStatus.COMPLETED);
-                jobExecutionEntity.setEndTime(new Date());
+                jobExecutionEntity.setEndTime(date);
+                jobJson = new ObjectMapper().writeValueAsString(jobExecutionEntity);
 
-                jobJson = mapper.writeValueAsString(jobExecutionEntity);
-
-                logger.log(Level.INFO, "JSON: " + jobJson);
-
-                // save json to log, send notification & create action log entry
-                saveJsonLog(jobJson);
-                JobOperator jobOperator = BatchRuntime.getJobOperator();
-                Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-                sendNotification(jobParams.getProperty("userId"), jobParams.getProperty("datasetId"));
-                createActionLogRecord(jobParams.getProperty("userId"), jobExecution, jobJson);
+                // [1] save json log to file
+                LoggingUtil.saveJsonLog(jobJson, logDir, jobId);
+                // [2] send user notifications
+                notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId);
+                // [3] action log it
+                actionLogServiceBean.log(LoggingUtil.getActionLogRecord(userId, jobExecution, jobJson, jobId));
 
             } else {
                 logger.log(Level.SEVERE, "Job execution is null");
@@ -120,66 +150,6 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error creating job json: " + e.getMessage());
-        }
-
-    }
-
-    private void saveJsonLog(String jobJson) {
-
-        try {
-            File dir = new File(logDir);
-            if (!dir.exists() && !dir.mkdirs()) {
-                logger.log(Level.SEVERE, "Couldn't create directory: " + dir.getAbsolutePath());
-            }
-            File reportJson = new File(dir.getAbsolutePath() + "/job-" + jobContext.getInstanceId() + ".json");
-            FileUtils.writeStringToFile(reportJson, jobJson);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error saving json report: " + e.getMessage());
-        }
-
-    }
-
-    private void sendNotification(String userId, String datasetId) {
-
-        AuthenticatedUser user = authenticationServiceBean.getAuthenticatedUser(userId);
-        if (user == null) {
-            logger.log(Level.SEVERE, "Cannot find authenticated user with ID: " + userId);
-        }
-
-        Dataset dataset = datasetService.findByGlobalId(datasetId);
-        if (dataset == null) {
-            logger.log(Level.SEVERE, "Cannot find dataset with ID: " + datasetId);
-        }
-
-        try {
-            notificationService.sendNotification(
-                    user,
-                    new Timestamp(new Date().getTime()),
-                    UserNotification.Type.FILESYSTEMIMPORT,
-                    dataset.getLatestVersion().getId());
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error sending job notification: " + e.getMessage());
-        }
-
-    }
-
-    private void createActionLogRecord(String userId, JobExecution execution, String log) {
-
-        try {
-            ActionLogRecord alr = new ActionLogRecord(ActionLogRecord.ActionType.Command, execution.getJobName());
-            alr.setId(Long.toString(jobContext.getInstanceId()));
-            alr.setInfo(log);
-            alr.setUserIdentifier(userId);
-            alr.setStartTime(execution.getStartTime());
-            alr.setEndTime(execution.getEndTime());
-            if (execution.getBatchStatus().name().equalsIgnoreCase("COMPLETED")) {
-                alr.setActionResult(ActionLogRecord.Result.OK);
-            } else {
-                alr.setActionResult(ActionLogRecord.Result.InternalError);
-            }
-            actionLogServiceBean.log(alr);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error creating action log record: " + e.getMessage());
         }
     }
 

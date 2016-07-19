@@ -5,10 +5,12 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
+import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogRecord;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
+import edu.harvard.iq.dataverse.authorization.users.User;
 import edu.harvard.iq.dataverse.batch.entities.JobExecutionEntity;
 import org.apache.commons.io.FileUtils;
 
@@ -61,6 +63,9 @@ public class FileRecordReporter extends AbstractBatchlet {
     @EJB
     DatasetServiceBean datasetService;
 
+    @EJB
+    UserServiceBean userServiceBean;
+
     @Override
     public String process() throws Exception {
 
@@ -95,8 +100,18 @@ public class FileRecordReporter extends AbstractBatchlet {
                 saveJsonLog(jobJson);
                 JobOperator jobOperator = BatchRuntime.getJobOperator();
                 Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-                sendNotification(jobParams.getProperty("userId"), jobParams.getProperty("datasetId"));
-                createActionLogRecord(jobParams.getProperty("userId"), jobExecution, jobJson);
+
+                // switch between primary key and persistent id methods
+               if (jobParams.containsKey("datasetPrimaryKey") && jobParams.containsKey("userPrimaryKey")) {
+                    Dataset ds = datasetService.find(Long.parseLong(jobParams.getProperty("datasetPrimaryKey")));
+                    User user = userServiceBean.find(Long.parseLong(jobParams.getProperty("userPrimaryKey")));
+                    sendNotification(user.getIdentifier(), ds.getGlobalId());
+                    createActionLogRecord(user.getIdentifier(), jobExecution, jobJson);
+                }
+                if (jobParams.containsKey("datasetId") && jobParams.containsKey("userId")) {
+                    sendNotification(jobParams.getProperty("userId"), jobParams.getProperty("datasetId"));
+                    createActionLogRecord(jobParams.getProperty("userId"), jobExecution, jobJson);
+                }
 
             } else {
                 logger.log(Level.SEVERE, "Job execution is null");

@@ -70,11 +70,7 @@ public class FileRecordReader extends AbstractItemReader {
             currentRecordNumber++;
             logger.log(Level.INFO,
                     "Reading file " + Long.toString(currentRecordNumber) + " of " + Long.toString(totalRecordNumber));
-
-            // skip if it's in the ignore list
-
-
-            return iterator.next();
+            return iterator.next(); // skip if it's in the ignore list
         }
         return null;
     }
