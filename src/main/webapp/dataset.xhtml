@@ -598,19 +598,19 @@
 
                     </ui:fragment>
 
-                    <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
-                               rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                        <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
-
-                        <p:tab id="visualizationTab" title="Visualization"
-                               jsf:rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
-                            <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500" width="1100" style="border:none"></iframe>
-                            <!--
-                            <ui:include src="visualizationFragment.xhtml"/>
-                             -->
-                        </p:tab>
-
-                        <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
+                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                                   rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
+                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                             
+                            <p:tab id="visualizationTab" title="Visualization"
+       							rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
+   								 <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500"
+           							 width="1100" style="border:none"
+           							 data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}">
+    							</iframe>
+							</p:tab>
+                            
+                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode)}">
                             <ui:include src="filesFragment.xhtml"/>
                         </p:tab>
