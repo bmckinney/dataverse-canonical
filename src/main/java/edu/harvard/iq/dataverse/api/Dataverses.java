@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
@@ -93,7 +94,10 @@ public class Dataverses extends AbstractApiBean {
        
 	private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
 
-	@POST
+    @EJB
+    PermissionServiceBean permissionService;
+
+    @POST
 	public Response addRoot( String body ) {
         LOGGER.info("Creating root dataverse");
 		return addDataverse( body, "");
@@ -760,22 +764,26 @@ public class Dataverses extends AbstractApiBean {
                 }
             }
             return okResponse(fileUploadMechanismsEnabledArray);
-        } catch (WrappedResponse ex) {
-            return ex.refineResponse( "Error listing file upload mechanisms for dataverse " + dvIdtf + ":");
+        } catch (WrappedResponse wr) {
+            return wr.refineResponse( "Error listing file upload mechanisms for dataverse " + dvIdtf + ":");
         }
     }
 
     @POST
     @Path("{identifier}/uploadmechanisms")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response setUploadMechanisms( @PathParam("identifier")String dvIdtf, String mechs ) {
+    public Response setUploadMechanisms(@PathParam("identifier")String dvIdtf, String mechs ) {
         try {
-            // TODO: 7/19/16 should be command execution with user permission check.
             Dataverse dv = findDataverseOrDie(dvIdtf);
-            dv.setFileUploadMechanisms(mechs);
-            return okResponse("File upload mechanisms of dataverse " + dvIdtf + " updated.");
-        } catch (WrappedResponse ex) {
-            return ex.getResponse();
+            DataverseRequest req = createDataverseRequest(findAuthenticatedUserOrDie());
+            if (permissionService.requestOn(req, dv).has(Permission.EditDataverse)) {
+                dv.setFileUploadMechanisms(mechs);
+                return okResponse("File upload mechanisms of dataverse " + dvIdtf + " updated.");
+            } else {
+                return errorResponse(Status.FORBIDDEN, "Not authorized");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
         }
     }
 
