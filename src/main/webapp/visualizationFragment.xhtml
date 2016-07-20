@@ -1,187 +1,201 @@
 <ui:composition
-    xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:h="http://java.sun.com/jsf/html"
-    xmlns:f="http://java.sun.com/jsf/core"
-    xmlns:ui="http://java.sun.com/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui"
-    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-    xmlns:jsf="http://xmlns.jcp.org/jsf"
-    xmlns:pt="http://java.sun.com/jsf/passthrough"
-    xmlns:cc="http://java.sun.com/jsf/composite"
-    xmlns:o="http://omnifaces.org/ui"
-    xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
+		xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:h="http://java.sun.com/jsf/html"
+		xmlns:f="http://java.sun.com/jsf/core"
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		xmlns:p="http://primefaces.org/ui"
+		xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+		xmlns:jsf="http://xmlns.jcp.org/jsf"
+		xmlns:pt="http://java.sun.com/jsf/passthrough"
+		xmlns:cc="http://java.sun.com/jsf/composite"
+		xmlns:o="http://omnifaces.org/ui"
+		xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
- 
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>
 
 
-		<style>
-			.visualize {
-				position: absolute;
-			}
-										
-			#gl {
-				position:fixed;
-				bottom:0px;
-				top:0px;
-				left:0px;
-				right:0px;
-			}
-			#inspector {
-				top:10px;
-				left:10px;
-				box-shadow: 2px 2px 5px #888888;
-				border-radius:8px;
-				position:absolute;
-				background-color:#fafafa;
-				padding:15px;
-				border-style:solid;
-				border-width:1px;
-				border-color:#ccc;
-			}
-										
-			#inspector ul {
-				padding:0px;
-			}
-										
-			#inspector ul li {
-				margin-left:5px;
-				margin-right:5px;
-				margin-bottom:5px;
-				list-style:none;
-				cursor: pointer;
-				color:#337ab7
-			}
-										
-			#inspector ul li:hover {
-				color:#994444;
-			}
-										
-			#inspector hr {
-				margin-top: 3px;
-				margin-bottom: 10px;
-			}
-										
-			#inspector h1 {
-				font-size:16pt;
-				margin: 0px;
-				padding: 0px;
-			}
-										
-			#inspector h2 {
-				font-size:14pt;
-				font-weight: normal;
-				margin-top: 5px;
-				color: #616161;
-			}
-								
-		</style>
+	<style>
+		.visualize {
+			position: absolute;
+		}
 
-    <br></br>
- 
-    	<div class="panel-group">
-    	<div class="panel panel-default">
+		#gl {
+			position:fixed;
+			bottom:0px;
+			top:0px;
+			left:0px;
+			right:0px;
+		}
+		#inspector {
+			top:10px;
+			left:10px;
+			box-shadow: 2px 2px 5px #888888;
+			border-radius:8px;
+			position:absolute;
+			background-color:#fafafa;
+			padding:15px;
+			border-style:solid;
+			border-width:1px;
+			border-color:#ccc;
+		}
+
+		#inspector ul {
+			padding:0px;
+		}
+
+		#inspector ul li {
+			margin-left:5px;
+			margin-right:5px;
+			margin-bottom:5px;
+			list-style:none;
+			cursor: pointer;
+			color:#337ab7
+		}
+
+		#inspector ul li:hover {
+			color:#994444;
+		}
+
+		#inspector hr {
+			margin-top: 3px;
+			margin-bottom: 10px;
+		}
+
+		#inspector h1 {
+			font-size:16pt;
+			margin: 0px;
+			padding: 0px;
+		}
+
+		#inspector h2 {
+			font-size:14pt;
+			font-weight: normal;
+			margin-top: 5px;
+			color: #616161;
+		}
+
+	</style>
+
+	<br></br>
+
+	<div class="panel-group">
+		<div class="panel panel-default">
 			<div class="container">
-			  <div class="row">
-			    <div class="col-md-10 visualize">
-			      <div id="gl"></div>
-			      <div id="inspector">        
-			        
-			         
-			        <h2>Choose Style:</h2>
-			        <ul>
-			          <li id="preset">Preset</li>
-			          <li id="cartoon">Cartoon</li>
-			          <li id="tube">Tube</li>
-			          <li id="lines">Lines</li>
-			          <li id="line-trace">Line Trace</li>
-			          <li id="sline">Smooth Line Trace</li>
-			          <li id="trace">Trace</li>
-			        </ul>
-			        <div id="status">initializing...</div>
-			        <hr></hr>
-			      
-			      </div>
-			    </div> 
-			  </div>
-			</div>	
- 
-</div>
-</div>
-		
-		
-		<script type="text/javascript" src="#{resource['js/pv/bio-pv.min.js']}?version=#{systemConfig.getVersion()}"></script>
-  		<script type="text/javascript" src="#{resource['js/pv/formset.js']}?version=#{systemConfig.getVersion()}"></script>
-    
-  		 
-		  <script type="text/javascript">
-			  var pdbid = "#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}";
-			  var element = document.getElementById('gl');
-		  	var viewer = pv.Viewer(element, 
-		                       { quality : 'high', width: 'auto', height : 'auto',
-		                         antialias : true, outline : true});
-		
-		    function load(id) {
-		      document.getElementById('status').innerHTML ='loading ' + id;
-		      pv.io.fetchPdb('pdb/' + id + '.pdb', function(structure) {
-		        window.structure = structure;
-		        preset();
-		        viewer.centerOn(structure);
-		      });
-		      document.getElementById('status').innerHTML = '';
-		    }
-		
-		    function loadProtein() {
-		      load(pdbid);
-		    }
-		    function lines() {
-		      viewer.clear();
-		      viewer.lines('structure', structure);
-		    }
-		    function cartoon() {
-		      viewer.clear();
-		      viewer.cartoon('structure', structure, { color: color.ssSuccession() });
-		    }
-		    function lineTrace() {
-		      viewer.clear();
-		      viewer.lineTrace('structure', structure);
-		    }
-		    function sline() {
-		      console.log("IN SLINE");
-		      viewer.clear();
-		      viewer.sline('structure', structure);
-		    }
-		    function tube() {
-		      viewer.clear();
-		      viewer.tube('structure', structure);
-		    }
-		    function trace() {
-		      viewer.clear();
-		      viewer.trace('structure', structure);
-		    }
-		    function preset() {
-		      viewer.clear();
-		      var ligand = structure.select({rnames : ['RVP', 'SAH']});
-		      viewer.ballsAndSticks('ligand', ligand);
-		      viewer.cartoon('protein', structure);
-		      // adapt zoom level to contain the whole structure
-		      viewer.autoZoom();
-		    }
-		
-		    document.getElementById('cartoon').onclick = cartoon;
-		    document.getElementById('line-trace').onclick = lineTrace;
-		    document.getElementById('preset').onclick = preset;
-		    document.getElementById('lines').onclick = lines;
-		    document.getElementById('trace').onclick = trace;
-		    document.getElementById('sline').onclick = sline;
-		    document.getElementById('tube').onclick = tube;
-/* 		    window.onresize = function(event) {
-		      pv.fitParent();
-		    } */
-		    document.addEventListener('DOMContentLoaded', loadProtein);
-		  </script>
+				<div class="row">
+					<div class="col-md-10 visualize">
+						<div id="gl"></div>
+						<div id="inspector">
+
+							<h2>Choose Style:</h2>
+							<ul>
+								<li id="preset">Preset</li>
+								<li id="cartoon">Cartoon</li>
+								<li id="tube">Tube</li>
+								<li id="lines">Lines</li>
+								<li id="line-trace">Line Trace</li>
+								<li id="sline">Smooth Line Trace</li>
+								<li id="trace">Trace</li>
+							</ul>
+							<div id="status">initializing...</div>
+							<hr></hr>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+
+	<script type="text/javascript" src="#{resource['js/pv/bio-pv.min.js']}?version=#{systemConfig.getVersion()}"></script>
+	<script type="text/javascript" src="#{resource['js/pv/formset.js']}?version=#{systemConfig.getVersion()}"></script>
+	<script type="text/javascript" src="#{resource['js/pv/gunzip.min.js']}?version=#{systemConfig.getVersion()}"></script>
+
+
+	<script type="text/javascript">
+		// added if/else for local testing so there is always a PDB available
+		/*  		if(document.getElementById('data-pdb') != null) {
+		 var pdbid = window.frameElement.getAttribute('data-pdb');
+		 }
+		 else {
+		 var pdbid = "5DDK";
+		 } */
+
+		// usually just use this
+		var pdbid = window.frameElement.getAttribute('data-pdb');
+
+		var folder = pdbid.charAt(1).concat(pdbid.charAt(2));
+		var url = 'pdb/' + folder + '/' + pdbid + '.pdb.gz';
+
+
+		var element = document.getElementById('gl');
+		var viewer = pv.Viewer(element,
+				{ quality : 'high', width: 'auto', height : 'auto',
+					antialias : true, outline : true});
+
+		function load(pdbid) {
+			document.getElementById('status').innerHTML ='loading ' + pdbid;
+			pv.io.fetchPdb(url, function(structure) {
+				window.structure = structure;
+				preset();
+				viewer.centerOn(structure);
+			});
+			document.getElementById('status').innerHTML = '';
+		}
+
+		function loadProtein() {
+			load(pdbid);
+		}
+		function lines() {
+			viewer.clear();
+			viewer.lines('structure', structure);
+		}
+		function cartoon() {
+			viewer.clear();
+			viewer.cartoon('structure', structure, { color: color.ssSuccession() });
+		}
+		function lineTrace() {
+			viewer.clear();
+			viewer.lineTrace('structure', structure);
+		}
+		function sline() {
+			console.log("IN SLINE");
+			viewer.clear();
+			viewer.sline('structure', structure);
+		}
+		function tube() {
+			viewer.clear();
+			viewer.tube('structure', structure);
+		}
+		function trace() {
+			viewer.clear();
+			viewer.trace('structure', structure);
+		}
+		function preset() {
+			viewer.clear();
+			var ligand = structure.select({rnames : ['RVP', 'SAH']});
+			viewer.ballsAndSticks('ligand', ligand);
+			viewer.cartoon('protein', structure);
+			viewer.autoZoom();
+		}
+
+		document.getElementById('cartoon').onclick = cartoon;
+		document.getElementById('line-trace').onclick = lineTrace;
+		document.getElementById('preset').onclick = preset;
+		document.getElementById('lines').onclick = lines;
+		document.getElementById('trace').onclick = trace;
+		document.getElementById('sline').onclick = sline;
+		document.getElementById('tube').onclick = tube;
+		/*            window.onresize = function(event) {
+		 pv.fitParent();
+		 } */
+		document.addEventListener('DOMContentLoaded', loadProtein);
+	</script>
+
 
 
 </ui:composition>
