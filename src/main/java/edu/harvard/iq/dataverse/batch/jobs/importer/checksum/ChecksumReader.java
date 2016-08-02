@@ -78,23 +78,35 @@ public class ChecksumReader extends AbstractItemReader {
     List<String> missingDataFiles = new ArrayList<>();
     List<String> missingChecksums = new ArrayList<>();
 
+    Dataset dataset;
+
     @PostConstruct
     public void init() {
-        // create list of dataset files to compare against checksum list later
+
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getExecutionId());
-        Dataset dataset = datasetService.findByGlobalId(jobParams.getProperty("datasetId"));
+
+        if (jobParams.containsKey("datasetId")) {
+            String datasetId = jobParams.getProperty("datasetId");
+            dataset = datasetService.findByGlobalId(datasetId);
+        }
+
+        if (jobParams.containsKey("datasetPrimaryKey")) {
+            long datasetPk = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
+            dataset = datasetService.find(datasetPk);
+        }
         dataFileList = dataset.getFiles();
     }
 
     @Override
     public void open(Serializable checkpoint) throws Exception {
 
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
-        Properties jobParams = jobOperator.getParameters(jobContext.getExecutionId());
+//        JobOperator jobOperator = BatchRuntime.getJobOperator();
+//        Properties jobParams = jobOperator.getParameters(jobContext.getExecutionId());
 
-        String doiDir = ((String) jobParams.get("datasetId")).replace("doi:","");
-        directory = new File(dataDir + doiDir);
+//        String doiDir = ((String) jobParams.get("datasetId")).replace("doi:","");
+//        directory = new File(dataDir + doiDir);
+        directory = new File(dataDir + dataset.getAuthority() + "/" + dataset.getIdentifier());
 
         if (preflight()) {
             StreamFactory factory = StreamFactory.newInstance();

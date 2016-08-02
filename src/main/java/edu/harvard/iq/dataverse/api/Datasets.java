@@ -682,61 +682,39 @@ public class Datasets extends AbstractApiBean {
     @POST
     @Path("{identifier}/dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject result) {
-        /**
-         * @todo What kind of error checking do we need here?
-         */
-        long userIdWhoMadeUploadRequest = result.getJsonNumber("userId").longValue();
-        long datasetId = result.getJsonNumber("datasetId").longValue();
-        String status = result.getString("status");
+
         try {
-            /**
-             * @todo Make sure id and datasetId match, I guess. Or maybe
-             * datasetId doesn't need to be sent in the JSON since we're using
-             * the id that was sent in the path.
-             */
+            String status = result.getString("status");
+            AuthenticatedUser user = findAuthenticatedUserOrDie();
             Dataset dataset = findDatasetOrDie(id);
+
+            // do we really need this check?
+            // how would we get a validation result without an rsync script?
             String rsyncScript = dataset.getRsyncScript();
             if (rsyncScript == null || rsyncScript.isEmpty()) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Dataset id " + dataset.getId() + " does not have an rsync script.");
+                return errorResponse(Response.Status.BAD_REQUEST, "Dataset id " + dataset.getId() +
+                        " does not have an rsync script.");
             }
+
             if ("validation passed".equals(status)) {
-                /**
-                 * @todo Actually kick off the crawling and importing code at
-                 * https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import
-                 */
 
                 Properties props = new Properties();
-                //props.setProperty("datasetId", datasetId);
-                //props.setProperty("userId", req.getUser().getIdentifier().replace("@",""));
-                props.setProperty("datasetPrimaryKey", Long.toString(datasetId));
-                props.setProperty("userPrimaryKey", Long.toString(userIdWhoMadeUploadRequest));
+                props.setProperty("datasetId", dataset.getGlobalId());
+                props.setProperty("userId", user.getIdentifier().replace("@",""));
                 JobOperator jo = BatchRuntime.getJobOperator();
                 long jid = jo.start("FileSystemImportJob", props);
 
                 JsonObjectBuilder bld = jsonObjectBuilder();
                 return this.okResponse(bld
                         .add("executionId", jid)
-                        .add("message", "FileSystemImportJob in progress")
+                        .add("message", "FileSystemImportJob was started.")
                 );
-
-                //return okResponse("Next we will write code to kick off crawling and importing of files ( https://github.com/bmckinney/bio-dataverse/tree/feature/file-system-import ) and which will notify the user if the crawling and importing was successful or not.");
 
             } else if ("validation failed".equals(status)) {
                 /**
-                 * @todo We've talked about notifying all users who have edit
-                 * access to the dataset rather than just the user who made the
-                 * upload request.
-                 */
-                AuthenticatedUser au;
-                try {
-                    au = userSvc.find(userIdWhoMadeUploadRequest);
-                } catch (Exception ex) {
-                    return errorResponse(Response.Status.BAD_REQUEST, "Unable to notify user about checksum validation failure. Could not find user based on id " + userIdWhoMadeUploadRequest + ".");
-                }
-                /**
                  * @todo Make sure an email is sent as well.
                  */
-                userNotificationSvc.sendNotification(au,
+                userNotificationSvc.sendNotification(user,
                         new Timestamp(new Date().getTime()),
                         UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 return okResponse("User notified about checksum validation failure.");

@@ -263,6 +263,20 @@
                                                         </o:param>
                                                     </h:outputFormat>
                                                 </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'FILESYSTEMIMPORT'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.import.filesystem']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
+                                                <ui:fragment rendered="#{item.type == 'CHECKSUMIMPORT'}">
+                                                    <i class="icon-dataset text-icon-inline text-muted"></i>
+                                                    <h:outputFormat value="#{bundle['notification.import.checksum']}" escape="false">
+                                                        <f:param value="#{item.theObject.getDataset().getGlobalId()}"/>
+                                                        <f:param value="#{item.theObject.getDataset().getDisplayName()}"/>
+                                                    </h:outputFormat>
+                                                </ui:fragment>
                                             </ui:fragment>
                                             <h:outputText value="#{item.sendDate}" styleClass="text-muted small"/>
                                         </div>

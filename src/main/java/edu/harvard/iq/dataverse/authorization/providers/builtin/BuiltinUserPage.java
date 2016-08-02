@@ -568,6 +568,14 @@ public class BuiltinUserPage implements java.io.Serializable {
                     userNotification.setTheObject(datasetService.find(userNotification.getObjectId()));
                     break;
 
+                case FILESYSTEMIMPORT:
+                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
+                case CHECKSUMIMPORT:
+                    userNotification.setTheObject(datasetVersionService.find(userNotification.getObjectId()));
+                    break;
+
                 case REQUESTFILEACCESS:
                     DataFile file = fileService.find(userNotification.getObjectId());
                     userNotification.setTheObject(file.getOwner());

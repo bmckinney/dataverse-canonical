@@ -61,9 +61,6 @@ public class FileRecordJobListener implements StepListener, JobListener {
     @EJB
     DatasetServiceBean datasetServiceBean;
 
-    @EJB
-    UserServiceBean userServiceBean;
-
     @Override
     public void afterStep() throws Exception {
         // no-op
@@ -91,39 +88,46 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
         try {
 
-            JobOperator jobOperator = BatchRuntime.getJobOperator();
-
+            Dataset dataset = null;
+            AuthenticatedUser user = null;
             String jobJson;
-            String userId;
-            String datasetId;
-            Long datasetVersionId;
             String jobId = Long.toString(jobContext.getInstanceId());
 
-            // determine user and dataset IDs based on job params
+            JobOperator jobOperator = BatchRuntime.getJobOperator();
             Properties jobParams = jobOperator.getParameters(jobContext.getInstanceId());
-            if (jobParams.containsKey("datasetPrimaryKey") && jobParams.containsKey("userPrimaryKey")) {
-                datasetId = datasetServiceBean.find(Long.parseLong(jobParams.getProperty("datasetPrimaryKey"))).getGlobalId();
-                userId = userServiceBean.find(Long.parseLong(jobParams.getProperty("userPrimaryKey"))).getIdentifier();
-            } else if (jobParams.containsKey("datasetId") && jobParams.containsKey("userId")) {
-                datasetId = jobParams.getProperty("datasetId");
-                userId = jobParams.getProperty("userId");
-            } else {
-                logger.log(Level.SEVERE, "Unable to report job since there are no job params for user and/or dataset.");
-                return;
+
+            // determine user and dataset IDs based on job params
+            if (jobParams.containsKey("datasetId")) {
+                String datasetId = jobParams.getProperty("datasetId");
+                dataset = datasetServiceBean.findByGlobalId(datasetId);
             }
 
-            AuthenticatedUser user = authenticationServiceBean.getAuthenticatedUser(userId);
+            if (jobParams.containsKey("datasetPrimaryKey")) {
+                long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
+                dataset = datasetServiceBean.find(datasetPrimaryKey);
+            }
+
+            if (jobParams.containsKey("userPrimaryKey")) {
+                long userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
+                user = authenticationServiceBean.findByID(userPrimaryKey);
+            }
+            if (jobParams.containsKey("userId")) {
+                String userId = jobParams.getProperty("userId");
+                user = authenticationServiceBean.getAuthenticatedUser(userId);
+            }
+
             if (user == null) {
-                logger.log(Level.SEVERE, "Cannot find authenticated user with ID: " + userId);
+                logger.log(Level.SEVERE, "Cannot find authenticated user.");
                 return;
             }
 
-            Dataset dataset = datasetServiceBean.findByGlobalId(datasetId);
             if (dataset == null) {
-                logger.log(Level.SEVERE, "Cannot find dataset with ID: " + datasetId);
+                logger.log(Level.SEVERE, "Cannot find dataset.");
                 return;
             }
-            datasetVersionId = dataset.getLatestVersion().getId();
+            long datasetVersionId = dataset.getLatestVersion().getId();
+
+            logger.log(Level.INFO, "FileRecordJobListener Dataset: " + dataset.getGlobalId());
 
             JobExecution jobExecution = jobOperator.getJobExecution(jobContext.getInstanceId());
             if (jobExecution != null) {
@@ -142,7 +146,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
                 // [2] send user notifications
                 notificationServiceBean.sendNotification(user, timestamp, notifyType, datasetVersionId);
                 // [3] action log it
-                actionLogServiceBean.log(LoggingUtil.getActionLogRecord(userId, jobExecution, jobJson, jobId));
+                actionLogServiceBean.log(LoggingUtil.getActionLogRecord(user.getIdentifier(), jobExecution, jobJson, jobId));
 
             } else {
                 logger.log(Level.SEVERE, "Job execution is null");

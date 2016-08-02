@@ -83,7 +83,17 @@
                                             </li>
                                         </ul>
                                     </li>
+                                    <li>
+                                        <p:commandLink id="privateUrl" oncomplete="PF('privateUrlConfirmation').show()" action="#{DatasetPage.initPrivateUrlPopUp()}" update="privateUrlPanel">
+                                            <h:outputText value="#{bundle['dataset.editBtn.itemLabel.privateUrl']}" />
+                                        </p:commandLink>
+                                    </li>
                                 </ui:fragment>
+                                <li>
+                                    <h:outputLink value="/dataset-widgets.xhtml?datasetId=#{DatasetPage.dataset.id}">
+                                        <h:outputText value="#{bundle['dataset.editBtn.itemLabel.widgets']}"/>
+                                    </h:outputLink>
+                                </li>
                                 <ui:fragment rendered="#{!DatasetPage.dataset.released and DatasetPage.dataset.latestVersion.versionState=='DRAFT' and permissionsWrapper.canIssueDeleteDatasetCommand(DatasetPage.dataset)}">
                                     <li class="divider"></li>
                                     <li>
@@ -99,30 +109,6 @@
                                             <h:outputText value="#{bundle['dataset.editBtn.itemLabel.deleteDraft']}" />
                                         </p:commandLink>
                                     </li>
-                                    <ui:fragment rendered="#{permissionsWrapper.canManagePermissions(DatasetPage.dataset)}">
-                                        <li class="dropdown-submenu pull-left">
-                                            <a tabindex="-1" href="#">#{bundle['dataset.editBtn.itemLabel.permissions']}</a>
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <h:link id="managePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage">
-                                                        <h:outputText value="Dataset" />
-                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                    </h:link>
-                                                </li>
-                                                <li>
-                                                    <h:link id="manageFilePermissions" styleClass="ui-commandlink ui-widget" outcome="permissions-manage-files">
-                                                        <h:outputText value="File" />
-                                                        <f:param name="id" value="#{DatasetPage.dataset.id}" />
-                                                    </h:link>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li>
-                                            <p:commandLink id="privateUrl" oncomplete="PF('privateUrlConfirmation').show()" action="#{DatasetPage.initPrivateUrlPopUp()}" update="privateUrlPanel">
-                                                <h:outputText value="#{bundle['dataset.editBtn.itemLabel.privateUrl']}" />
-                                            </p:commandLink>
-                                        </li>
-                                    </ui:fragment>
                                 </ui:fragment>
                                 <ui:fragment rendered="#{DatasetPage.dataset.released and DatasetPage.existReleasedVersion and permissionsWrapper.canIssuePublishDatasetCommand(DatasetPage.dataset)}">
                                     <li class="divider"></li>
@@ -317,46 +303,13 @@
                             <h:outputText value="#{bundle['dataset.versionUI.unpublished']}" styleClass="label label-warning" rendered="#{!DatasetPage.dataset.released}"/>
                             <h:outputText value="#{bundle['dataset.versionUI.deaccessioned']}" styleClass="label label-danger" rendered="#{DatasetPage.workingVersion.deaccessioned}"/>
                         </div>
-                        <div id="citation-block" class="row" jsf:rendered="#{!empty DatasetPage.displayCitation}">
-                            <div class="col-xs-12">
-                                <div class="row #{DatasetPage.workingVersion.deaccessioned ? 'bg-danger' : 'bg-citation'}">
-                                    <div id="citation" class="#{DatasetPage.workingVersion.deaccessioned ? 'col-xs-12' : 'col-xs-8 col-md-9'}"
-                                         onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                        <h:outputText value="#{DatasetPage.displayCitation}" escape="false"/>
-                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{!DatasetPage.dataset.released}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.released']}"/>
-                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.dataset.released and DatasetPage.workingVersion.draft}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.draft']}"/>
-                                        <span class="glyphicon glyphicon-question-sign text-primary" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}" data-toggle="tooltip" data-trigger="hover" data-placement="top" data-original-title="#{bundle['dataset.cite.title.deassessioned']}"/>
-                                    </div>
-                                    <div id="citation-download" class="col-sm-4 col-md-3 text-right" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                        <div class="dropdown">
-                                            <button type="button" id="downloadCitation" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                                                <span class="glyphicon glyphicon-list"/> #{bundle['dataset.cite.downloadBtn']} <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu pull-right text-left" role="menu">
-                                                <li>
-                                                    <a jsf:id="endNoteLink" jsf:action="#{DatasetPage.downloadDatasetCitationXML()}" >
-                                                        #{bundle['dataset.cite.downloadBtn.xml']}
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a jsf:id="risLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationRIS()}">
-                                                        #{bundle['dataset.cite.downloadBtn.ris']}
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a jsf:id="bibLink" jsf:actionListener="#{DatasetPage.downloadDatasetCitationBibtex()}">
-                                                        #{bundle['dataset.cite.downloadBtn.bib']}
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row bg-muted" jsf:rendered="#{!DatasetPage.workingVersion.deaccessioned}">
-                                    <div id="citation-standards" class="col-xs-12 text-muted small"><h:outputText value="#{bundle['dataset.cite.standards.tip']}" escape="false"/></div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- CITATION BLOCK -->
+                        <ui:fragment rendered="#{!empty DatasetPage.displayCitation}">
+                            <ui:include src="dataset-citation.xhtml">
+                                <ui:param name="datasetPage" value="true"/>
+                            </ui:include>
+                        </ui:fragment>
+                        <!-- END: CITATION BLOCK -->
                         <div id="deaccession-reason-block" class="row bg-danger" jsf:rendered="#{DatasetPage.workingVersion.deaccessioned}">
                             <h5 class="margin-top-half">#{bundle['dataset.deaccession.reason']}</h5>
                             <p>#{DatasetPage.workingVersion.versionNote}</p>
@@ -382,10 +335,10 @@
                                 <div id="pdbid" class="form-group"
                                      jsf:rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
                                     <label class="col-sm-3 control-label">
-                                            <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info"
-                                                  data-original-title="PDB Coordinates">
-                                                  #{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value} Coordinates
-                                            </span>
+                                              <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info"
+                                                    data-original-title="PDB Coordinates">
+                                                    #{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value} Coordinates
+                                              </span>
                                     </label>
                                     <div class="col-sm-9">
                                         <a href="http://www.rcsb.org/pdb/explore/explore.do?structureId=#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}" title="PDB" target="_blank">PDB</a>,
@@ -598,19 +551,19 @@
 
                     </ui:fragment>
 
-                        <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
-                                   rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
-                            <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
-                             
-                            <p:tab id="visualizationTab" title="Visualization"
-       							rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
-   								 <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500"
-           							 width="1100" style="border:none"
-           							 data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}">
-    							</iframe>
-							</p:tab>
-                            
-                            <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
+                    <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
+                               rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
+                        <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+
+                        <p:tab id="visualizationTab" title="Visualization"
+                               rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
+                            <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500"
+                                    width="1100" style="border:none"
+                                    data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}">
+                            </iframe>
+                        </p:tab>
+
+                        <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode)}">
                             <ui:include src="filesFragment.xhtml"/>
                         </p:tab>
@@ -620,7 +573,7 @@
                         <p:tab id="metadataMapTab" title="#{bundle['file.dataFilesTab.metadata.header']}"
                                rendered="#{!DatasetPage.workingVersion.deaccessioned and (empty DatasetPage.editMode or DatasetPage.editMode == 'METADATA')}">
                             <div class="text-right margin-bottom"
-                                 jsf:rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode
+                                 jsf:rendered="#{DatasetPage.sessionUserAuthenticated and empty DatasetPage.editMode and !widgetWrapper.widgetView
                                                      and DatasetPage.canUpdateDataset()}">
                                 <p:commandLink type="button" styleClass="btn btn-default" actionListener="#{DatasetPage.edit('METADATA')}" update="@form,:messagePanel" oncomplete="javascript:post_edit_metadata()" disabled="#{DatasetPage.locked}">
                                     <f:setPropertyActionListener target="#{DatasetPage.selectedTabIndex}" value="0" />
@@ -692,118 +645,27 @@
                         <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
                     </div>
                 </p:dialog>
-
                 <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
                     <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
-
                     <table>
                         <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
-
                             <tr>
                                 <td>#{resFile.label}</td>
                             </tr>
-
                         </ui:repeat>
                     </table>
-
                     <div class="button-block">
                         <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
                         <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
-                        </ui:fragment>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadInvalid').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.inValidSelectedFilesForDownload']}" widgetVar="downloadMixed" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.mixedSelectedFilesForDownload']}</p>
-                        <table>
-                            <ui:repeat var="resFile" value="#{DatasetPage.selectedNonDownloadableFiles}" >
-                                <tr>
-                                    <td>#{resFile.label}</td>
-                                </tr>
-                            </ui:repeat>
-                        </table>
-                        <div class="button-block">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.downloadUnrestricted']}</p>
-                            <ui:fragment rendered="#{!DatasetPage.downloadPopupRequired}">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()" action="#{DatasetPage.startMultipleFileDownload()}" />
-                            </ui:fragment>
-                            <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
-                                <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
-                                                 action="#{DatasetPage.initGuestbookMultipleResponse()}" update="@form" />
-                            </ui:fragment>
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteConfirmation').hide()" action="#{DatasetPage.deleteDataset()}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDraftDialog.header']}" widgetVar="deleteVersionConfirmation" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDraftDialog.tip']}</p>
-                        <div class="button-block">
-                            <p:commandButton value="#{bundle.continue}" onclick="PF('deleteVersionConfirmation').hide()" action="#{DatasetPage.deleteDatasetVersion()}" />
-                            <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteVersionConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
-                        <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
-                            <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>&#160;
-                                <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
-                                    <f:param value="#{systemConfig.guidesBaseUrl}"/>
-                                    <f:param value="#{systemConfig.version}"/>
-                                </h:outputFormat>
-                            </p>
-                            <div>
-                                <div class="highlight" jsf:rendered="#{empty(DatasetPage.privateUrl)}">
-                                    <p class="no-margin-bottom">#{bundle['dataset.privateurl.absent']}</p>
-                                </div>
-                                <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
-                                    <p class="text-success highlightBold" jsf:rendered="#{DatasetPage.privateUrlWasJustCreated}"><span class="glyphicon glyphicon glyphicon-ok"/> #{bundle['dataset.privateurl.createdSuccess']}</p>
-                                    <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
-                                    <p class="no-margin-bottom">
-                                        <span>#{privateUrlLink}</span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}" />
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" update="privateUrlPanel"/>
-                            </div>
-                        </p:fragment>
-                        <p:fragment id="privateUrlPanelCannotCreate" rendered="#{!DatasetPage.userCanCreatePrivateURL}">
-                            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.cannotCreate']}</p>
-                            <div class="button-block">
-                                <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
-                            </div>
-                        </p:fragment>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="disablePrivateUrlConfirmation" modal="true" closable="false">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}</p>
-                        <div class="button-block">
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
-                            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button" />
-                        </div>
-                    </p:dialog>
-                    <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
-                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.tip']}</p>
-                        <ui:fragment rendered="#{DatasetPage.dataset.released}">
-                            <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteFileDialog.failed.tip']}</p>
                         </ui:fragment>
                         <ui:fragment rendered="#{DatasetPage.downloadPopupRequired}">
                             <p:commandButton value="#{bundle.continue}" onclick="PF('downloadMixed').hide()"
                                              action="#{DatasetPage.initGuestbookMultipleResponse()}" update="@form" />
                         </ui:fragment>
                         <p:commandButton value="#{bundle.cancel}" onclick="PF('downloadMixed').hide();" type="button" />
-
+                    </div>
                 </p:dialog>
-
-
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteDialog.header']}" widgetVar="deleteConfirmation" modal="true">
                     <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['file.deleteDialog.tip']}</p>
                     <div class="button-block">
@@ -816,6 +678,46 @@
                     <div class="button-block">
                         <p:commandButton value="#{bundle.continue}" onclick="PF('deleteVersionConfirmation').hide()" action="#{DatasetPage.deleteDatasetVersion()}" />
                         <p:commandButton value="#{bundle.cancel}" onclick="PF('deleteVersionConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
+                    </div>
+                </p:dialog>
+                <p:dialog id="privateUrlId" styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="privateUrlConfirmation" modal="true">
+                    <p:fragment id="privateUrlPanel" rendered="#{DatasetPage.userCanCreatePrivateURL}">
+                        <p class="help-block"><span class="glyphicon glyphicon-info-sign"/>&#160;
+                            <h:outputFormat value="#{bundle['dataset.privateurl.tip']}" escape="false">
+                                <f:param value="#{systemConfig.guidesBaseUrl}"/>
+                                <f:param value="#{systemConfig.version}"/>
+                            </h:outputFormat>
+                        </p>
+                        <div>
+                            <div class="highlight" jsf:rendered="#{empty(DatasetPage.privateUrl)}">
+                                <p class="no-margin-bottom">#{bundle['dataset.privateurl.absent']}</p>
+                            </div>
+                            <div class="highlight" jsf:rendered="#{!empty(DatasetPage.privateUrl)}" onclick="if (event.target) { selectText(event.target); } else{ selectText(this); }">
+                                <p class="text-success highlightBold" jsf:rendered="#{DatasetPage.privateUrlWasJustCreated}"><span class="glyphicon glyphicon glyphicon-ok"/> #{bundle['dataset.privateurl.createdSuccess']}</p>
+                                <ui:param name="privateUrlLink" value="#{DatasetPage.getPrivateUrlLink(DatasetPage.privateUrl)}" />
+                                <p class="no-margin-bottom">
+                                    <span>#{privateUrlLink}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.createPrivateUrl']}" action="#{DatasetPage.createPrivateUrl()}" update="privateUrlPanel,:messagePanel" rendered="#{empty(DatasetPage.privateUrl)}" />
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrl']}" action="#{DatasetPage.setPrivateUrlJustCreatedToFalse()}" onclick="PF('privateUrlConfirmation').hide();PF('disablePrivateUrlConfirmation').show()" rendered="#{!empty(DatasetPage.privateUrl)}" update="privateUrlPanel"/>
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.close}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" update="privateUrlPanel"/>
+                        </div>
+                    </p:fragment>
+                    <p:fragment id="privateUrlPanelCannotCreate" rendered="#{!DatasetPage.userCanCreatePrivateURL}">
+                        <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.cannotCreate']}</p>
+                        <div class="button-block">
+                            <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('privateUrlConfirmation').hide();PF('blockDatasetForm').hide();" type="button" />
+                        </div>
+                    </p:fragment>
+                </p:dialog>
+                <p:dialog styleClass="smallPopUp" header="#{bundle['dataset.privateurl.header']}" widgetVar="disablePrivateUrlConfirmation" modal="true" closable="false">
+                    <p class="text-danger"><span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.privateurl.disableConfirmationText']}</p>
+                    <div class="button-block">
+                        <p:commandButton styleClass="btn btn-default" value="#{bundle['dataset.privateurl.disablePrivateUrlConfirm']}" action="#{DatasetPage.disablePrivateUrl()}" update="privateUrlPanel,:messagePanel" onclick="PF('disablePrivateUrlConfirmation').hide();"/>
+                        <p:commandButton styleClass="btn btn-default" value="#{bundle.cancel}" onclick="PF('disablePrivateUrlConfirmation').hide();PF('privateUrlConfirmation').show();" type="button" />
                     </div>
                 </p:dialog>
                 <p:dialog styleClass="smallPopUp" header="#{bundle['file.deleteFileDialog.header']}" widgetVar="deleteFileConfirmation" modal="true">
@@ -1074,61 +976,100 @@
                 <p:dialog id="fileTagsPopup" styleClass="smallPopUp" header="#{bundle['file.editTags']}" widgetVar="fileTagsPopup" modal="true">
                     <p class="help-block"><span class="glyphicon glyphicon-info-sign"/> #{bundle['file.editTagsDialog.tip']}</p>
                     <div class="form-horizontal" jsf:rendered="#{!(empty DatasetPage.selectedFiles)}">
-                        <div class="form-group">
-                            <label for="fileTagsMenuDS" class="col-sm-3 control-label">
+                        <div class="form-group text-left">
+                            <label for="selectedTagsList" class="col-sm-4 control-label">
+                                #{bundle['file.editTagsDialog.selectedTags']}
+                            </label>
+                            <div class="col-sm-8">
+                                <p:outputPanel id="selectedTagsList" style="padding-top:.5em;">
+                                    <h:outputText value="#{bundle['file.editTagsDialog.selectedTags.none']}" rendered="#{(empty DatasetPage.selectedTags) and (empty DatasetPage.selectedTabFileTags)}" />
+
+                                    <ui:repeat value="#{DatasetPage.selectedTags}" var="tags" rendered="#{!empty DatasetPage.selectedTags}">
+                                        <h:outputText value="#{tags}" styleClass="label label-default" style="margin-right:.5em;display:inline-block;"/>
+                                    </ui:repeat>
+                                    <ui:repeat value="#{DatasetPage.selectedTabFileTags}" var="tags" rendered="#{!empty DatasetPage.selectedTabFileTags}">
+                                        <h:outputText value="#{tags}" styleClass="label label-info" style="margin-right:.5em;display:inline-block;"/>
+                                    </ui:repeat>
+                                </p:outputPanel>
+                            </div>
+                        </div>
+                        <div class="form-group text-left">
+                            <label for="fileTagsMenuDS" class="col-sm-4 control-label">
                                 #{bundle['file.editTagsDialog.select']}
                             </label>
                             <div class="col-sm-8">
                                 <p:selectCheckboxMenu id="fileTagsMenuDS" styleClass="form-control"
                                                       value="#{DatasetPage.selectedTags}" label="#{bundle.select}">
-                                    <f:selectItems value="#{DatasetPage.dataset.categoriesByName}"/>
+
+                                    <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+                                    <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+
+                                    <f:selectItems value="#{DatasetPage.categoriesByName}"/>
                                 </p:selectCheckboxMenu>
                                 <p:message for="fileTagsMenuDS" display="text" />
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="fileTagAddNewDS" class="col-sm-3 control-label">
+                        <div class="form-group text-left">
+                            <label for="fileTagAddNewDS" class="col-sm-4 control-label">
                                 #{bundle['file.editTagsDialog.add']}
                             </label>
                             <div class="col-sm-8">
-                                <p:inputText id="fileTagAddNewDS" styleClass="form-control"
-                                             type="text" value="#{DatasetPage.newCategoryName}"
-                                             placeholder="#{bundle['file.editTagsDialog.newName']}"
-                                             onkeypress="if (event.keyCode == 13) {
-                                                             return false;
-                                                         }" />
+                                <div class="row form-inline">
+                                    <div class="col-sm-12">
+                                        <p class="help-block">#{bundle['file.editTagsDialog.add.tip']}</p>
+                                        <p:inputText id="fileTagAddNewDS" styleClass="form-control"
+                                                     type="text" value="#{DatasetPage.newCategoryName}"
+                                                     placeholder="#{bundle['file.editTagsDialog.newName']}"
+                                                     onkeypress="if (event.keyCode == 13) {
+                                                                     return false;
+                                                                 }" />
+                                        <p:commandLink styleClass="btn btn-default" style="margin-left:.5em;" value="#{bundle.apply}" action="#{DatasetPage.saveNewCategory}" update="selectedTagsList, fileTagAddNewDS, fileTagsMenuDS"/>
+                                    </div>
+                                </div>
                                 <p:message for="fileTagAddNewDS" display="text" />
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group" jsf:rendered="#{DatasetPage.tabularDataSelected}">
-                        <label for="tabularDataTagsDsPAge" class="col-sm-3 control-label">
-                                <span data-toggle="tooltip" data-placement="auto right" class="tooltiplabel text-info" data-original-title="#{bundle['file.tabularDataTags.title']}">
-                                    #{bundle['file.tabularDataTags']}
-                                </span>
-                        </label>
-                        <div class="col-sm-8">
-                            <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
-                            <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
-                                                  value="#{DatasetPage.selectedTabFileTags}" label="#{bundle.select}"
-                                                  filter="false">
-                                <f:selectItems value="#{DatasetPage.tabFileTags}" />
-                            </p:selectCheckboxMenu>
-                            <p:message for="tabularDataTagsDSPage" display="text" />
+                        <div class="form-group text-left" jsf:rendered="#{DatasetPage.tabularDataSelected}">
+                            <label for="tabularDataTagsDSPage" class="col-sm-4 control-label">
+                                #{bundle['file.tabularDataTags']}
+                            </label>
+                            <div class="col-sm-8">
+                                <p class="help-block">#{bundle['file.tabularDataTags.tip']}</p>
+                                <p:selectCheckboxMenu id="tabularDataTagsDSPage" styleClass="form-control"
+                                                      value="#{DatasetPage.selectedTabFileTags}" label="#{bundle.select}"
+                                                      filter="false">
+
+                                    <p:ajax event="toggleSelect" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+                                    <p:ajax event="change" listener="#{DatasetPage.handleSelection}" update="selectedTagsList" />
+
+                                    <f:selectItems value="#{DatasetPage.tabFileTags}" />
+                                </p:selectCheckboxMenu>
+                                <p:message for="tabularDataTagsDSPage" display="text" />
+                            </div>
+                        </div>
+                        <div class="form-group text-left">
+                            <label class="col-sm-4 control-label">
+                                #{bundle['dataset.removeUnusedFileTags.label']}
+                            </label>
+                            <div class="col-sm-8">
+                                <p class="help-block">#{bundle['dataset.removeUnusedFileTags.tip']}</p>
+                                <p:selectBooleanCheckbox id="removeUnused" itemLabel="#{bundle['dataset.removeUnusedFileTags.check']}" value="#{DatasetPage.removeUnusedTags}" widgetVar="removeUnused"/>
+                            </div>
                         </div>
                     </div>
                     <div class="button-block">
-                        <p:commandButton id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
-                        <p:commandButton id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
+                        <p:commandButton styleClass="btn btn-default" id="fileTagsPopupSaveButton" value="#{bundle.saveChanges}" oncomplete="PF('fileTagsPopup').hide()" update=":datasetForm:tabView:filesTable, :datasetForm" action="#{DatasetPage.saveFileTagsAndCategories()}"/>
+                        <p:commandButton styleClass="btn btn-default" id="fileTagsPopupCancelButton" value="#{bundle.cancel}" onclick="PF('fileTagsPopup').hide();PF('blockDatasetForm').hide();" actionListener="#{DatasetPage.clearFileMetadataSelectedForTagsPopup()}"/>
                     </div>
                 </p:dialog>
 
                 <!-- Request Access Sign Up/Log In Button -->
                 <p:dialog header="#{bundle['file.requestAccess']}" widgetVar="accessSignUpLogIn_popup" modal="true">
                     <p class="help-block">
-                        <span class="glyphicon glyphicon-info-sign"/>&#160;
-                        <h:outputFormat value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
-                            <f:param value="#{dataverseHeaderFragment.loginRedirectPage}"/>
+                        <span class="glyphicon glyphicon-warning-sign text-danger"/>&#160;
+                        <h:outputFormat styleClass="text-danger" value="#{dataverseHeaderFragment.signupAllowed ? bundle['file.requestAccess.dialog.msg.signup'] : bundle['file.requestAccess.dialog.msg']}" escape="false">
+                            <f:param value="#{navigationWrapper.redirectPage}"/>
+                            <f:param value="#{widgetWrapper.widgetView ? '_blank' : '_self'}"/>
                         </h:outputFormat>
                     </p>
                     <div class="button-block">
@@ -1432,12 +1373,15 @@
                     <p class="text-danger">
                         <span class="glyphicon glyphicon-warning-sign"/>
                         <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
-                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            <o:param>
+                                <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                </a>
+                            </o:param>
                         </h:outputFormat>
                     </p>
                     <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0}">
-                        <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                     </div>
                     <p class="help-block">
                         <span class="glyphicon glyphicon-info-sign"/> #{bundle['dataset.publishBoth.tip']}
@@ -1453,7 +1397,7 @@
                         <span class="glyphicon glyphicon-warning-sign"/> #{bundle['dataset.republish.tip']}
                     </p>
                     <div id="terms-agreement-block" class="well" jsf:rendered="#{DatasetPage.datasetPublishCustomText.length() > 0 and DatasetPage.isDatasetPublishPopupCustomTextOnAllVersions()}">
-                        <h:outputText value="#{DatasetPage.datasetPublishCustomText}" escape="false"/>
+                        <h:outputText value="#{MarkupChecker:sanitizeBasicHTML(DatasetPage.datasetPublishCustomText)}" escape="false"/>
                     </div>
                     <ui:fragment rendered="#{DatasetPage.dataset.latestVersion.minorUpdate}">
                         <p class="help-block">
@@ -1480,8 +1424,11 @@
                     <p class="text-danger">
                         <span class="glyphicon glyphicon-warning-sign"/>
                         <h:outputFormat value="#{bundle['dataset.mayNotPublish.administrator']}" escape="false">
-                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
+                            <o:param>
+                                <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                </a>
+                            </o:param>
                         </h:outputFormat>
                     </p>
                     <div class="button-block">
@@ -1493,10 +1440,16 @@
                     <p class="text-danger">
                         <span class="glyphicon glyphicon-warning-sign"/>
                         <h:outputFormat value="#{bundle['dataset.mayNotPublish.twoGenerations']}" escape="false">
-                            <f:param value="#{DatasetPage.dataset.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.displayName}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.owner.alias}"/>
-                            <f:param value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                            <o:param>
+                                <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
+                                    <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
+                                </a>
+                            </o:param>
+                            <o:param>
+                                <a href="/dataverse.xhtml?alias=#{DatasetPage.dataset.owner.owner.alias}" title="#{DatasetPage.dataset.owner.owner.displayName}">
+                                    <h:outputText value="#{DatasetPage.dataset.owner.owner.displayName}"/>
+                                </a>
+                            </o:param>
                         </h:outputFormat>
                     </p>
                     <div class="button-block">

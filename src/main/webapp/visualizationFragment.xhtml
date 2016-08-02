@@ -127,9 +127,10 @@
 		
 		// usually just use this
  		var pdbid = window.frameElement.getAttribute('data-pdb');
+		pdbid = pdbid.toLowerCase();
 		
 		var folder = pdbid.charAt(1).concat(pdbid.charAt(2));
-		var url = 'pdb/' + folder + '/' + pdbid + '.pdb.gz';
+		var url = 'pdb/' + folder + '/pdb' + pdbid + '.ent.gz';
 
 		
         var element = document.getElementById('gl');
