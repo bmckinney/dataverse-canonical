@@ -1,0 +1,88 @@
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>NGL @ arose.github.io</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"/>
+    <link rel="stylesheet" href="http://arose.github.io/ngl/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="http://arose.github.io/ngl/css/main.css" />
+   
+    <link rel="subresource" href="http://arose.github.io/ngl/css/light.css" />
+    <link rel="subresource" href="#{resource['js/pv/dark.css']}?version=#{systemConfig.getVersion()}" />
+     
+</head>
+
+<body>
+   
+    <script src="http://arose.github.io/ngl/js/ngl.js"></script>
+
+   
+    <script src="http://arose.github.io/ngl/js/lib/signals.min.js"></script>
+    <script src="http://arose.github.io/ngl/js/lib/tether.min.js"></script>
+    <script src="http://arose.github.io/ngl/js/lib/colorpicker.min.js"></script>
+    <script src="http://arose.github.io/ngl/js/ui/ui.js"></script>
+    <script src="http://arose.github.io/ngl/js/ui/ui.extra.js"></script>
+    <script src="http://arose.github.io/ngl/js/ui/ui.ngl.js"></script>
+    <script src="http://arose.github.io/ngl/js/gui.js"></script>
+
+    <
+    <script src="http://arose.github.io/ngl/js/examples.js"></script>
+    <script src="http://arose.github.io/ngl/js/plugins.js"></script>
+	
+	<script type="text/javascript" src="#{resource['js/pv/ngl.js']}?version=#{systemConfig.getVersion()}"></script>
+	
+    <script>
+        NGL.cssDirectory = "css/";
+        NGL.documentationUrl = "api/dev/index.html";
+
+        // Datasources
+        NGL.DatasourceRegistry.add(
+            "data", new NGL.StaticDatasource( "data/" )
+        );
+
+        // Plugins
+        NGL.PluginRegistry.add(
+            "apbs", "plugins/apbs.plugin"
+        );
+
+        //
+
+        document.addEventListener( "DOMContentLoaded", function(){
+            var stage = new NGL.Stage();
+            NGL.StageWidget( stage );
+
+            var example = NGL.getQuery( "example" );
+            if( example ) NGL.ExampleRegistry.load( example, stage );
+
+            var load = NGL.getQuery( "load" );
+            if( load ) stage.loadFile( load, { defaultRepresentation: true } );
+
+            var plugin = NGL.getQuery( "plugin" );
+            if( plugin ) NGL.PluginRegistry.load( plugin, stage );
+        } );
+    </script>
+
+</body>
+</html>
+ -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+</head>
+<body>
+    <script src="http://arose.github.io/ngl/js/ngl.js"></script>
+    <script>
+        document.addEventListener( "DOMContentLoaded", function() {
+            var stage = new NGL.Stage( "viewport", { backgroundColor: "white" } );
+            stage.loadFile( "rcsb://5ddk", { defaultRepresentation: true } );
+        } );
+    </script>
+    <div id="viewport" style="width:1100px; height:500px;"></div>
+</body>
+</html>

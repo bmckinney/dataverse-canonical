@@ -506,14 +506,23 @@
                         <p:tabView id="tabView" widgetVar="content" activeIndex="#{DatasetPage.selectedTabIndex}"
                                    rendered="#{empty DatasetPage.editMode or (DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'LICENSE')}">
                             <p:ajax event="tabChange" listener="#{DatasetPage.tabChanged}" oncomplete="bind_bsui_components();" update="@this" />
+                           
                              
-                            <p:tab id="visualizationTab" title="Visualization"
-       							rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
-   								 <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500"
-           							 width="1100" style="border:none"
-           							 data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}">
-    							</iframe>
-							</p:tab>
+                            <p:tab id="visualizationTab" title="Visualization" 
+                            rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}"> 
+  
+                            	<script id="ngl-widget" src="#{resource['js/pv/NGL_widget_2.js']}?version=#{systemConfig.getVersion()}" type="text/javascript"
+                            	data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}"></script>
+     			
+							  
+                             <!--  
+                            <iframe src ="NewTest.xhtml" id="info" class="iframe" name="info" height="500" width="1100" 
+                            	style="border:none" data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}">
+                            </iframe> 
+                              --> 
+                            	
+                            </p:tab>
+                            
                             
                             <p:tab id="dataFilesTab" title="#{bundle.files}" rendered="#{!DatasetPage.workingVersion.deaccessioned and
                                                               (empty DatasetPage.editMode)}">

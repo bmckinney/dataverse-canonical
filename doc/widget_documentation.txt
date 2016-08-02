@@ -1,0 +1,12 @@
+README
+
+JavaScript widget documentation
+
+The protein viewer widget is a JavaScript file that can be inserted into the HTML Dataset page to create a new tab for visualization. It can also be adapted to insert any HTML code segment into the visualization tab without interfering with the rest of the Dataset page, and without using any outside resources such as object or iFrame tags. Currently there are two options, either the PV viewer or NGL viewer, which both display PDB files in slightly different styles. Both widgets can be found under src/main/webapp/resources/js/pv. The PV viewer requires two outside JS sources, the ZLib library to unzip PDB files and the PV library to display PDB files:
+https://github.com/biasmv/pv (note: bio-pv.min.js used in the widget is slightly different than its counterpart in the PV Github to allow it to unzip gzipped files)
+https://github.com/imaya/zlib.js
+
+The NGL viewer only requires the NGL JS file:
+https://github.com/arose/ngl
+
+These widget templates can be adapted to display different types of data by converting the HTML page you wish to display into this JS widget. The basic procedure is to first insert any CSS stylesheets that are required for the page. Next, insert the widget div and customize any tags the div needs. Next, any outside JavaScript resources required in the page should be loaded into a script tag. Finally, write any additional JavaScript methods necessary and call the scripts and functions required in the main function in the widget. When this is done, the widget can be called inside the visualization tab with a single script tag, such as: <script id="ngl-widget" src="#{resource['js/pv/NGL_widget_2.js']}?version=#{systemConfig.getVersion()}" type="text/javascript">.
