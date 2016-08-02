@@ -42,10 +42,20 @@ public class ChecksumProcessor implements ItemProcessor {
 
     @PostConstruct
     public void init() {
+
+
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         Properties jobParams = jobOperator.getParameters(jobContext.getExecutionId());
-        datasetId = jobParams.getProperty("datasetId");
-        dataset = datasetService.findByGlobalId(datasetId);
+
+        if (jobParams.containsKey("datasetId")) {
+            datasetId = jobParams.getProperty("datasetId");
+            dataset = datasetService.findByGlobalId(datasetId);
+        }
+
+        if (jobParams.containsKey("datasetPrimaryKey")) {
+            long datasetPk = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
+            dataset = datasetService.find(datasetPk);
+        }
         dataFileList = dataset.getFiles();
     }
 

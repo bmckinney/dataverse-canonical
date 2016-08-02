@@ -7,7 +7,7 @@ import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
@@ -46,19 +46,13 @@ public class FileRecordProcessor implements ItemProcessor {
     DataFileServiceBean fileService;
 
     @EJB
-    UserServiceBean userServiceBean;
+    AuthenticationServiceBean authenticationServiceBean;
 
     @EJB
     PermissionServiceBean permissionServiceBean;
 
     Dataset dataset;
     AuthenticatedUser user;
-
-    String datasetId;
-
-    long datasetPrimaryKey;
-    long userPrimaryKey;
-
     List<DataFile> dataFileList;
 
     @PostConstruct
@@ -68,20 +62,24 @@ public class FileRecordProcessor implements ItemProcessor {
         Properties jobParams = jobOperator.getParameters(jobContext.getExecutionId());
 
         if (jobParams.containsKey("datasetId")) {
-            datasetId = jobParams.getProperty("datasetId");
+            String datasetId = jobParams.getProperty("datasetId");
             dataset = datasetService.findByGlobalId(datasetId);
             dataFileList = dataset.getFiles();
         }
 
         if (jobParams.containsKey("datasetPrimaryKey")) {
-            datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
+            long datasetPrimaryKey = Long.parseLong(jobParams.getProperty("datasetPrimaryKey"));
             dataset = datasetService.find(datasetPrimaryKey);
             dataFileList = dataset.getFiles();
         }
 
         if (jobParams.containsKey("userPrimaryKey")) {
-            userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
-            user = userServiceBean.find(userPrimaryKey);
+            long userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
+            user = authenticationServiceBean.findByID(userPrimaryKey);
+        }
+        if (jobParams.containsKey("userId")) {
+            String userId = jobParams.getProperty("userPrimaryKey");
+            user = authenticationServiceBean.getAuthenticatedUser(userId);
         }
 
     }

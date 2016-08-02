@@ -221,6 +221,12 @@ public class MailServiceBean implements java.io.Serializable {
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.returned.dataset.subject");
             case CREATEACC:
                 return ResourceBundle.getBundle("Bundle").getString("notification.email.create.account.subject");
+            case CHECKSUMFAIL:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.checksumfail.subject");
+            case FILESYSTEMIMPORT:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.filesystem.subject");
+            case CHECKSUMIMPORT:
+                return ResourceBundle.getBundle("Bundle").getString("notification.email.import.checksum.subject");
         }
         return "";
     }
@@ -427,6 +433,30 @@ public class MailServiceBean implements java.io.Serializable {
                         systemConfig.getVersion()
                 ));
                 return messageText += accountCreatedMessage;
+            case CHECKSUMFAIL:
+                dataset = (Dataset) targetObject;
+                String checksumFailMessage = BundleUtil.getStringFromBundle("notification.checksumfail", Arrays.asList(
+                        dataset.getGlobalId()
+                ));
+                return messageText += checksumFailMessage;
+            case FILESYSTEMIMPORT:
+                version =  (DatasetVersion) targetObject;
+                String importFilesystemMessage = BundleUtil.getStringFromBundle("notification.import.filesystem", Arrays.asList(
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner())
+                ));
+                return messageText += importFilesystemMessage;
+            case CHECKSUMIMPORT:
+                version =  (DatasetVersion) targetObject;
+                String importChecksumMessage = BundleUtil.getStringFromBundle("notification.import.checksum", Arrays.asList(
+                        version.getDataset().getDisplayName(),
+                        getDatasetLink(version.getDataset()),
+                        version.getDataset().getOwner().getDisplayName(),
+                        getDataverseLink(version.getDataset().getOwner())
+                ));
+                return messageText += importChecksumMessage;
         }
         
         return "";
@@ -457,6 +487,11 @@ public class MailServiceBean implements java.io.Serializable {
                 return versionService.find(userNotification.getObjectId());
             case CREATEACC:
                 return userNotification.getUser();
+            case CHECKSUMFAIL:
+                return datasetService.find(userNotification.getObjectId());
+            case FILESYSTEMIMPORT:
+                return datasetService.find(userNotification.getObjectId());
+
         }
         return null;
     }
