@@ -13,8 +13,11 @@ import edu.harvard.iq.dataverse.engine.command.AbstractCommand;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.exception.PermissionException;
 import edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder;
+import org.apache.commons.lang.StringUtils;
+
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 import java.util.Collections;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
@@ -37,6 +40,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
 
     private final Dataset dataset;
     private final DataverseRequest request;
+    private long millisecondsToSleep = 90000;
 
     public RequestRsyncScriptCommand(DataverseRequest requestArg, Dataset datasetArg) {
         super(requestArg, datasetArg);
@@ -44,87 +48,112 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
         dataset = datasetArg;
     }
 
+    public RequestRsyncScriptCommand(DataverseRequest requestArg, Dataset datasetArg, long sleepArg) {
+        super(requestArg, datasetArg);
+        request = requestArg;
+        dataset = datasetArg;
+        millisecondsToSleep = sleepArg;
+    }
+
     @Override
     public JsonObjectBuilder execute(CommandContext ctxt) throws CommandException {
-        // {"dep_email": "bob.smith@example.com", "uid": 42, "depositor_name": ["Smith", "Bob"], "lab_email": "john.doe@example.com", "datacite.resourcetype": "X-Ray Diffraction"}
+
+        int statusCode;
+        HttpResponse<JsonNode> response;
         User user = request.getUser();
-        if (!(user instanceof AuthenticatedUser)) {
-            /**
-             * @todo get Permission.AddDataset from above somehow rather than
-             * duplicating it here.
-             */
-            throw new PermissionException("This command can only be called by an AuthenticatedUser, not " + user,
+        AuthenticatedUser authenticatedUser;
+        Dataset updatedDataset;
+
+        /**
+         * @todo get Permission.AddDataset from above somehow rather than duplicating it here.
+         */
+        if (user instanceof AuthenticatedUser) {
+            authenticatedUser = (AuthenticatedUser) user;
+        } else {
+            throw new PermissionException("The DCM command can only be called by an AuthenticatedUser, not " + user,
                     this, Collections.singleton(Permission.AddDataset), dataset);
         }
-        AuthenticatedUser au = (AuthenticatedUser) user;
-        HttpResponse<JsonNode> response;
+
         /**
          * @todo Refactor this building of JSON to make it testable.
          */
         JsonObjectBuilder jab = Json.createObjectBuilder();
-        // The general rule should be to always pass the user id and dataset id to the DCM.
-        jab.add("userId", au.getId());
+        jab.add("userId", authenticatedUser.getIdentifier());
         jab.add("datasetId", dataset.getId());
-        String errorPreamble = "User id " + au.getId() + " had a problem retrieving rsync script for dataset id " + dataset.getId() + " from Data Capture Module. ";
+        jab.add("datasetIdentifier", dataset.getIdentifier());
+        String dcmRequest = jab.build().toString();
+
+        // [1] Make DCM upload request and check text response
         try {
-            response = ctxt.dataCaptureModule().requestRsyncScriptCreation(au, dataset, jab);
+            String answer = ctxt.dataCaptureModule().requestRsyncScriptCreation(dcmRequest);
+            answer = answer.trim();
+            if (answer.equalsIgnoreCase("recieved")) answer = "received";
+            if (answer.equalsIgnoreCase("received")) {
+                logger.log(Level.INFO, "DCM upload request succeeded: " + answer);
+            } else {
+                throw new RuntimeException("DCM upload request failed: " + dcmRequest + " Response:" + answer);
+            }
         } catch (Exception ex) {
-            throw new RuntimeException(errorPreamble + ex.getLocalizedMessage(), ex);
+            throw new RuntimeException("DCM upload request failed: " + dcmRequest + ex.getLocalizedMessage(), ex);
         }
-        int statusCode = response.getStatus();
-        /**
-         * @todo Since we're creating something, maybe a 201 response would be
-         * more appropriate.
-         */
-        if (statusCode != 200) {
-            /**
-             * @todo is the body too big to fit in the actionlogrecord? The
-             * column length on "info" is 1024. See also
-             * https://github.com/IQSS/dataverse/issues/2669
-             */
-            throw new RuntimeException(errorPreamble + "Rather than 200 the status code was " + statusCode + ". The body was \'" + response.getBody() + "\'.");
-        }
-        String message = response.getBody().getObject().getString("status");
-        logger.info("Message from Data Caputure Module upload request endpoint: " + message);
-        /**
-         * @todo Should we persist to the database the fact that we have
-         * requested a script? That way we could avoid hitting ur.py (upload
-         * request) over and over since it is preferred that we only hit it
-         * once.
-         */
-        /**
-         * @todo Don't expect to get the script from ur.py (upload request). Go
-         * fetch it from sr.py (script request) after a minute or so. (Cron runs
-         * every minute.) Wait 90 seconds to be safe.
-         */
-        long millisecondsToSleep = 0;
+
+        // [2] set the script as pending
+        updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, "pending");
+
+        // [3] wait for cron job, 90 seconds to be safe?
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {
-            throw new RuntimeException(errorPreamble + "Unable to wait " + millisecondsToSleep + " milliseconds: " + ex.getLocalizedMessage());
+            updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, "interrupted");
+            throw new RuntimeException("DCM request: " + dcmRequest + " Unable to wait " + millisecondsToSleep +
+                    " milliseconds: " + ex.getLocalizedMessage());
         }
+
+        // [4] make rsync script request
         try {
-            response = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(au, dataset);
+            response = ctxt.dataCaptureModule().retreiveRequestedRsyncScript(dataset);
+            statusCode = response.getStatus();
+            logger.log(Level.INFO, "sr.py status code: " + statusCode);
+            if (statusCode != 200) {
+                throw new RuntimeException("DCM request: " + dcmRequest + "Status: " + statusCode + " Response:"
+                        + response.getBody());
+            }
         } catch (Exception ex) {
-            throw new RuntimeException(errorPreamble + "Problem retrieving rsync script: " + ex.getLocalizedMessage());
+            logger.log(Level.SEVERE, "sr.py exeception: " + ex.getMessage());
+            updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, "failed");
+            throw new RuntimeException("DCM json request: " + dcmRequest + " Problem retrieving rsync script: " +
+                    ex.getLocalizedMessage());
         }
-        statusCode = response.getStatus();
-        if (statusCode != 200) {
-            throw new RuntimeException(errorPreamble + "Rather than 200 the status code was " + statusCode + ". The body was \'" + response.getBody() + "\'.");
-        }
-        /**
-         * @todo What happens when no datasetId is in the JSON?
-         */
-        long datasetId = response.getBody().getObject().getLong("datasetId");
+
+        int datasetId = response.getBody().getObject().getInt("datasetId");
+        String userId = response.getBody().getObject().getString("userId");
+        String datasetIdentifier = response.getBody().getObject().getString("datasetIdentifier");
         String script = response.getBody().getObject().getString("script");
-        if (script == null || script.isEmpty()) {
-            throw new RuntimeException(errorPreamble + "The script was null or empty.");
+
+        logger.log(Level.INFO, "sr.py: datasetId: " + datasetId);
+
+        if (StringUtils.isEmpty(script) || StringUtils.isEmpty(userId) || StringUtils.isEmpty(datasetIdentifier)) {
+            throw new RuntimeException("DCM request: " + dcmRequest +
+                    " Missing required json values from the DCM script request response: " +
+                    response.getBody().toString());
         }
-        logger.fine("script for dataset " + datasetId + ": " + script);
-        Dataset updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, script);
+        if (datasetId != dataset.getId()) {
+            throw new RuntimeException("DCM request: " + dcmRequest +
+                    " The dataset Id doesn't match: " + Integer.toString(datasetId) + " - " +
+                    Long.toString(dataset.getId()));
+        }
+
+        // [5] save the dataset's script in the database
+        updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, script);
+        logger.log(Level.INFO, "script for dataset " + datasetId + ": " + script);
+
+        // [6] return the json
         NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
+                .add("userId", userId)
                 .add("datasetId", datasetId)
+                .add("datasetIdentifier", datasetIdentifier)
                 .add("script", script);
+
         return nullSafeJsonBuilder;
     }
 

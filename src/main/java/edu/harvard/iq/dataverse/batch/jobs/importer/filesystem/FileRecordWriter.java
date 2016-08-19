@@ -5,7 +5,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 
@@ -41,7 +41,7 @@ public class FileRecordWriter extends AbstractItemWriter {
     DataFileServiceBean fileService;
 
     @EJB
-    UserServiceBean userServiceBean;
+    AuthenticationServiceBean authenticationServiceBean;
 
     @EJB
     PermissionServiceBean permissionServiceBean;
@@ -52,7 +52,6 @@ public class FileRecordWriter extends AbstractItemWriter {
     String datasetId;
 
     long datasetPrimaryKey;
-    long userPrimaryKey;
 
 
     @Override
@@ -71,9 +70,17 @@ public class FileRecordWriter extends AbstractItemWriter {
         }
 
         if (jobParams.containsKey("userPrimaryKey")) {
-            userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
-            user = userServiceBean.find(userPrimaryKey);
+            logger.log(Level.INFO, "userPrimaryKey: " + jobParams.getProperty("userPrimaryKey"));
+            long userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
+            user = authenticationServiceBean.findByID(userPrimaryKey);
         }
+
+        if (jobParams.containsKey("userId")) {
+            String userId = jobParams.getProperty("userId");
+            logger.log(Level.INFO, "userId: " + jobParams.getProperty("userId"));
+            user = authenticationServiceBean.getAuthenticatedUser(userId);
+        }
+
     }
 
     @Override
@@ -85,7 +92,7 @@ public class FileRecordWriter extends AbstractItemWriter {
                 dataset.getLatestVersion().getDataset().setFiles(datafiles);
             }
         } else {
-            logger.log(Level.SEVERE, "Unable to save imported datafiles because the authenticted user has " +
+            logger.log(Level.SEVERE, "Unable to save imported datafiles because the authenticated user has " +
                     "insufficient permission.");
         }
     }

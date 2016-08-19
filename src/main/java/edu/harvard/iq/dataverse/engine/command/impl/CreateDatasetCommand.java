@@ -215,28 +215,35 @@ public class CreateDatasetCommand extends AbstractCommand<Dataset> {
            logger.log(Level.FINE,"after create version user "  + formatter.format(new Date().getTime()));       
 
            /** @todo use something like this as a trigger instead? */
-//        if (savedDataset.getOwner().getFileUploadMechanisms().contains("RSYNC")) {
-//
-//        }
-         /** @todo Go ahead and create the folder for files. Don't wait */
-        for (DatasetField datasetField : savedDataset.getLatestVersion().getDatasetFields()) {
-            /**
-             * @todo What should the trigger be for kicking off the
-             * RequestRsyncScriptCommand? For now we're looking for the presence
-             * of the "dataType" field, which is way too course.
-             *
-             * Does an argument get passed to the CreateDatasetCommand? What's
-             * the trigger? Something configured at the parent dataverse? Is the
-             * user forced to use rsync?
-             */
-            if ("dataType".equals(datasetField.getDatasetFieldType().getName())) {
-                try {
-                    ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
-                } catch (CommandException | RuntimeException ex) {
-                    logger.info("Attempt to request rsync script failed: " + ex.getLocalizedMessage());
-                }
+        if (savedDataset.getRsyncScript() != null && savedDataset.getRsyncScript().equalsIgnoreCase("requested")) {
+            logger.info("RSYNC REQUESTED");
+            try {
+                ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
+            } catch (CommandException | RuntimeException ex) {
+                logger.info("Attempt to request rsync script failed: " + ex.getLocalizedMessage());
             }
+        } else {
+            logger.info("RSYNC NOT REQUESTED");
         }
+//         /** @todo Go ahead and create the folder for files. Don't wait */
+//        for (DatasetField datasetField : savedDataset.getLatestVersion().getDatasetFields()) {
+//            /**
+//             * @todo What should the trigger be for kicking off the
+//             * RequestRsyncScriptCommand? For now we're looking for the presence
+//             * of the "dataType" field, which is way too course.
+//             *
+//             * Does an argument get passed to the CreateDatasetCommand? What's
+//             * the trigger? Something configured at the parent dataverse? Is the
+//             * user forced to use rsync?
+//             */
+//            if ("dataType".equals(datasetField.getDatasetFieldType().getName())) {
+//                try {
+//                    ctxt.engine().submit(new RequestRsyncScriptCommand(getRequest(), savedDataset));
+//                } catch (CommandException | RuntimeException ex) {
+//                    logger.info("Attempt to request rsync script failed: " + ex.getLocalizedMessage());
+//                }
+//            }
+//        }
 
            return savedDataset;
     }

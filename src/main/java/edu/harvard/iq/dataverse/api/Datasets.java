@@ -3,15 +3,19 @@ package edu.harvard.iq.dataverse.api;
 import edu.harvard.iq.dataverse.DOIEZIdServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetField;
+import edu.harvard.iq.dataverse.DatasetFieldServiceBean;
 import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseServiceBean;
 import edu.harvard.iq.dataverse.MetadataBlock;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.RoleAssignment;
 import edu.harvard.iq.dataverse.UserNotification;
+import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
+import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
@@ -40,9 +44,10 @@ import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetVersionCommand;
 import edu.harvard.iq.dataverse.export.DDIExportServiceBean;
 import edu.harvard.iq.dataverse.export.ddi.DdiExportUtil;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
-import edu.harvard.iq.dataverse.util.EjbUtil;
 import edu.harvard.iq.dataverse.util.SystemConfig;
 import edu.harvard.iq.dataverse.util.json.JsonParseException;
+import org.apache.commons.lang.StringUtils;
+
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.*;
 import static edu.harvard.iq.dataverse.util.json.NullSafeJsonBuilder.jsonObjectBuilder;
 
@@ -59,12 +64,13 @@ import java.util.logging.Logger;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -72,6 +78,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -96,6 +103,15 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     SystemConfig systemConfig;
+
+    @EJB
+    DatasetFieldServiceBean datasetFieldServiceBean;
+
+    @EJB
+    AuthenticationServiceBean authenticationServiceBean;
+
+    @EJB
+    PermissionServiceBean permissionServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -638,91 +654,145 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
-    @Path("{identifier}/dataCaptureModule/rsync")
-    public Response getRsync(@PathParam("identifier") String id) {
+    @GET
+    @Path("{id}/dataCaptureModule/rsync")
+    public Response getRsync(@PathParam("id") String id,
+                             @QueryParam("sleep") @DefaultValue("0") long sleep) {
         try {
             Dataset dataset = findDatasetOrDie(id);
-            /**
-             * @todo This logic really doesn't belong here but for now the Data
-             * Capture Module will blindly create an rsync script for *any*
-             * dataset, regardless of if the dataset has been configured to
-             * support rsync or not.
-             */
-            for (DatasetField datasetField : dataset.getLatestVersion().getDatasetFields()) {
-                /**
-                 * @todo What should the trigger be for kicking off the
-                 * RequestRsyncScriptCommand? For now we're looking for the
-                 * presence of the "dataType" field, which is way too course.
-                 * This is copied from CreateDatasetCommand.
-                 */
-                if ("dataType".equals(datasetField.getDatasetFieldType().getName())) {
-                    JsonObjectBuilder jab = execCommand(new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset));
-                    return okResponse(jab);
-                }
+            String uploadMethods = dataset.getDataverseContext().getFileUploadMechanisms();
+            if (StringUtils.isNotEmpty(uploadMethods) && uploadMethods.toUpperCase().contains("RSYNC")) {
+                JsonObjectBuilder jab = execCommand(
+                        new RequestRsyncScriptCommand(createDataverseRequest(findUserOrDie()), dataset, sleep));
+                return okResponse(jab);
+            } else {
+                return errorResponse(Response.Status.NOT_IMPLEMENTED,
+                        "Parent dataverse doesn't support rsync transfers for dataset: " + id);
             }
-        } catch (WrappedResponse ex) {
+        }  catch (WrappedResponse ex) {
             return ex.getResponse();
-        } catch (EJBException ex) {
-            /**
-             * @todo Ask Michael if we can simply have `execCommand` (and the
-             * GUI equivalent, which is `commandEngine.submit` catch a
-             * EJBException and/or RuntimeException instead of having this log
-             * here. Note how DatasetPage, for example, has to catch
-             * EJBException when issuing CreateDatasetCommand. The engine should
-             * probably be doing more error handling.
-             */
-            return errorResponse(Response.Status.INTERNAL_SERVER_ERROR, "Unable to get an rsync script: " + EjbUtil.ejbExceptionToString(ex));
         }
-        return errorResponse(Response.Status.NOT_FOUND, "An rsync script was not found for dataset id " + id);
     }
 
     /**
-     * @todo How will authentication be handled for this method?
+     * User authentication is handled in two ways
+     * 1) the endpoint requires a dataverse superuser api key
+     * 2) the depositing dataverse user (indicated by userId in the json request body) must have Permission.AddDataset
+     *    on the dataset's parent dataverse
      */
     @POST
-    @Path("{identifier}/dataCaptureModule/checksumValidation")
-    public Response receiveChecksumValidationResults(@PathParam("identifier") String id, JsonObject result) {
+    @Path("dataCaptureModule/checksumValidation")
+    public Response receiveChecksumValidationResults(JsonObject result) {
+
+        String passed = "validation passed";
+        String failed = "validation failed";
 
         try {
-            String status = result.getString("status");
-            AuthenticatedUser user = findAuthenticatedUserOrDie();
-            Dataset dataset = findDatasetOrDie(id);
+            AuthenticatedUser depositingUser;
 
-            // do we really need this check?
-            // how would we get a validation result without an rsync script?
-            String rsyncScript = dataset.getRsyncScript();
-            if (rsyncScript == null || rsyncScript.isEmpty()) {
-                return errorResponse(Response.Status.BAD_REQUEST, "Dataset id " + dataset.getId() +
-                        " does not have an rsync script.");
+            // only superusers should run this
+            User superUser = findUserOrDie();
+            if (!superUser.isSuperuser()) {
+                return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
             }
 
-            if ("validation passed".equals(status)) {
+            String status = result.getString("status");
+            String userid = result.getString("userId").replace("@", "");
+            String datasetIdentifier = result.getString("datasetIdentifier");
+            int datasetid = result.getInt("datasetId");
 
+            if (StringUtils.isEmpty(status)) {
+                return errorResponse(Response.Status.BAD_REQUEST,
+                        "Checksum validation response is missing a status message: " + result.toString());
+            }
+
+            if (StringUtils.isEmpty(datasetIdentifier)) {
+                return errorResponse(Response.Status.BAD_REQUEST,
+                        "Checksum validation response is missing a dataset Identifier: " + result.toString());
+            }
+            Dataset dataset = findDatasetOrDie(Integer.toString(datasetid));
+
+            // check user permissions for depositing user
+            if (StringUtils.isNotEmpty(userid)) {
+                depositingUser = authenticationServiceBean.getAuthenticatedUser(userid);
+                LOGGER.log(Level.INFO, "Depositing user: " + depositingUser.getIdentifier());
+                Dataverse dv = dataset.getOwner();
+                List<AuthenticatedUser> userList = permissionServiceBean.getUsersWithPermissionOn(Permission.AddDataset, dv);
+                for (AuthenticatedUser au : userList) {
+                    LOGGER.log(Level.INFO, "User: " + au.getIdentifier());
+                }
+                if (!permissionServiceBean.userOn(depositingUser, dv).has(Permission.AddDataset)) {
+                    return errorResponse(Response.Status.FORBIDDEN,
+                            "User " + userid + " doesn't have sufficient permission to import files into dataset " +
+                                    datasetIdentifier);
+                }
+            } else {
+                return errorResponse(Response.Status.BAD_REQUEST,
+                        "Checksum validation response is missing a user ID: " + result.toString());
+            }
+
+            // PASSED
+            if (passed.equals(status)) {
+
+                // run an async batch job
                 Properties props = new Properties();
                 props.setProperty("datasetId", dataset.getGlobalId());
-                props.setProperty("userId", user.getIdentifier().replace("@",""));
+                props.setProperty("userId", depositingUser.getIdentifier().replace("@",""));
                 JobOperator jo = BatchRuntime.getJobOperator();
                 long jid = jo.start("FileSystemImportJob", props);
 
+                // return json
                 JsonObjectBuilder bld = jsonObjectBuilder();
                 return this.okResponse(bld
-                        .add("executionId", jid)
+                        .add("jobId", jid)
+                        .add("jobStatusUrl", "https://dv.sbgrid.com/api/batch/job/" + jid)
+                        .add("datasetId", datasetid)
+                        .add("datasetIdentifier", datasetIdentifier)
+                        .add("userId", userid)
                         .add("message", "FileSystemImportJob was started.")
                 );
 
-            } else if ("validation failed".equals(status)) {
-                /**
-                 * @todo Make sure an email is sent as well.
-                 */
-                userNotificationSvc.sendNotification(user,
-                        new Timestamp(new Date().getTime()),
+            // FAILED
+            } else if (failed.equals(status)) {
+                userNotificationSvc.sendNotification(depositingUser, new Timestamp(new Date().getTime()),
                         UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 return okResponse("User notified about checksum validation failure.");
+
+            // OTHER
             } else {
                 return errorResponse(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + status);
             }
         } catch (WrappedResponse ex) {
             return ex.getResponse();
+        }
+    }
+
+    @Path("{id}/dataCaptureModule/rsyncScript")
+    @GET
+    @Produces({"application/text"})
+    public String datafile(@PathParam("id") String id, @Context HttpServletResponse response) {
+        try {
+            Dataset ds = findDatasetOrDie(id);
+            // try to generate script if there isn't one
+            if (ds.getRsyncScript() == null) {
+                String uploadMethods = ds.getDataverseContext().getFileUploadMechanisms();
+                if (StringUtils.isNotEmpty(uploadMethods) && uploadMethods.toUpperCase().contains("RSYNC")) {
+                    AuthenticatedUser au = authenticationServiceBean.getAuthenticatedUser("dataverseAdmin");
+                    JsonObjectBuilder jab = execCommand(
+                            new RequestRsyncScriptCommand(createDataverseRequest(au), ds, 90000));
+                }
+            }
+            if (ds.getRsyncScript() != null) {
+                response.setHeader("Content-disposition", "attachment; filename=\"" + ds.getIdentifier() + "_rsync.sh\"");
+                response.setHeader("Access-Control-Allow-Origin", "*");
+                return ds.getRsyncScript();
+            } else {
+                LOGGER.log(Level.INFO, "no rsync script available");
+                return "no rsync script available";
+            }
+        }  catch (WrappedResponse ex) {
+            LOGGER.log(Level.SEVERE, "rsyncScript error: " + ex.getMessage());
+            return "";
         }
     }
 

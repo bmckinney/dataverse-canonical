@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.GetPrivateUrlCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -80,7 +81,6 @@ import javax.faces.component.UIInput;
 
 import javax.faces.event.AjaxBehaviorEvent;
 
-import javax.faces.context.ExternalContext;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import org.primefaces.component.tabview.TabView;
@@ -1081,7 +1081,7 @@ public class DatasetPage implements java.io.Serializable {
      *   (4) No existing Map
      *   (5) Can Edit Dataset
      *   
-     * @param FileMetadata fm
+     * @param fm
      * @return boolean
      */
     public boolean canSeeMapButtonReminderToPublish(FileMetadata fm){
@@ -4371,6 +4371,15 @@ public class DatasetPage implements java.io.Serializable {
 
     public String getPrivateUrlLink(PrivateUrl privateUrl) {
         return privateUrl.getLink();
+    }
+
+    public void generateRsyncScript() {
+        try {
+            commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset, 90000));
+        } catch (CommandException ex) {
+            logger.info("CommandException caught calling RequestRsyncScriptCommand: " + ex.getMessage());
+        }
+
     }
 
 }

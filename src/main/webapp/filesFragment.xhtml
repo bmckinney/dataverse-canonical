@@ -11,6 +11,32 @@
         xmlns:o="http://omnifaces.org/ui"
         xmlns:iqbs="http://xmlns.jcp.org/jsf/composite/iqbs">
 
+
+    <!-- Rsync Upload: display if no files but there is an rsync script available -->
+    <div id="rsyncUploadBlock"
+         class="panel panel-default margin-bottom"
+         style="width: 90%; margin: 20px auto;"
+         jsf:rendered="#{(DatasetPage.fileMetadatasSearch.size() eq 0) and (DatasetPage.dataset.getRsyncScript().length() gt 0)}">
+        <div class="panel-body">
+            <p style="font-size: 1.3em; color: #808080; padding: 20px; text-align: center">
+                #{bundle['file.fromRsync.heading']}
+            </p>
+            <img src="/resources/images/#{bundle['file.fromRsync.icon']}"
+                 alt="#{bundle['file.fromRsync.heading']}"
+                 style="width:200px; display: block; margin-left: auto; margin-right: auto;"/>
+            <p style="text-align: center">#{bundle['file.fromRsync.instructions']}</p>
+
+            <div id="syncUploadDiv" style="display: block; width: 90%; margin: 0 auto; text-align: center;">
+                <a id="rsyncScriptDownloadLink2" href="#"
+                   class="ui-commandlink ui-widget btn btn-default"
+                   onclick="window.location = '/api/datasets/#{DatasetPage.dataset.id}/dataCaptureModule/rsyncScript';return false;"
+                   type="button">
+                    <span class="glyphicon glyphicon-download-alt"></span> Download Rsync Script
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Upload (removed - L.A. 4.2) -->
     <!-- Files Table -->
     <p:dataTable id="filesTable"
@@ -22,7 +48,8 @@
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
-            <div jsf:id="filesHeaderBlock" class="row">
+            <div jsf:id="filesHeaderBlock" class="row"
+                 jsf:rendered="#{(DatasetPage.fileMetadatasSearch.size() gt 0) or (DatasetPage.dataset.getRsyncScript() == null)}">
                 <div class="form-horizontal col-sm-7 col-xs-9 text-left">
                     <div class="form-group">
                         <div class="col-xs-8">
@@ -192,6 +219,7 @@
                 </div>
             </div>
         </f:facet>
+
         <p:column selectionMode="multiple" class="text-center" style="width:40px !important;"/>
         <p:column class="col-file-thumb" style="width:64px !important;">
             <div class="thumbnail-block text-center">

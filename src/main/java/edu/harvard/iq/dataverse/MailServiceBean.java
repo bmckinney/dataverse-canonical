@@ -488,9 +488,9 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEACC:
                 return userNotification.getUser();
             case CHECKSUMFAIL:
-                return datasetService.find(userNotification.getObjectId());
+                return versionService.find(userNotification.getObjectId());
             case FILESYSTEMIMPORT:
-                return datasetService.find(userNotification.getObjectId());
+                return versionService.find(userNotification.getObjectId());
 
         }
         return null;

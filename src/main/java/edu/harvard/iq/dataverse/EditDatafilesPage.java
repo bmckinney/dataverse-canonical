@@ -22,6 +22,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.LinkDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDataverseCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.UpdateDatasetCommand;
 import edu.harvard.iq.dataverse.ingest.IngestRequest;
 import edu.harvard.iq.dataverse.ingest.IngestServiceBean;
@@ -1916,5 +1917,14 @@ public class EditDatafilesPage implements java.io.Serializable {
         }
     }
 
-    
+    public void generateRsyncScript() {
+        try {
+            commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset, 90000));
+        } catch (CommandException ex) {
+            logger.info("CommandException caught calling RequestRsyncScriptCommand: " + ex.getMessage());
+        }
+
+    }
+
+
 }

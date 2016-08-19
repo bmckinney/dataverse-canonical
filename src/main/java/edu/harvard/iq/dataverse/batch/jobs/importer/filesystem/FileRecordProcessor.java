@@ -5,6 +5,7 @@ import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.DatasetVersion;
+import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.FileMetadata;
 import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
@@ -74,11 +75,13 @@ public class FileRecordProcessor implements ItemProcessor {
         }
 
         if (jobParams.containsKey("userPrimaryKey")) {
+            logger.log(Level.INFO, "userPrimaryKey: " + jobParams.getProperty("userPrimaryKey"));
             long userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
             user = authenticationServiceBean.findByID(userPrimaryKey);
         }
         if (jobParams.containsKey("userId")) {
-            String userId = jobParams.getProperty("userPrimaryKey");
+            String userId = jobParams.getProperty("userId");
+            logger.log(Level.INFO, "userId: " + jobParams.getProperty("userId"));
             user = authenticationServiceBean.getAuthenticatedUser(userId);
         }
 
@@ -94,12 +97,22 @@ public class FileRecordProcessor implements ItemProcessor {
                 return null;
             }
         }
+        logger.log(Level.INFO, "Path: " + path);
         return createDataFile(new File(path));
     }
 
     private DataFile createDataFile(File file) {
 
         try {
+
+            // DEBUG PERMISSIONS
+            logger.log(Level.INFO, "creatDataFile - Depositing user: " + user.getIdentifier());
+            Dataverse dv = dataset.getOwner();
+            List<AuthenticatedUser> userList = permissionServiceBean.getUsersWithPermissionOn(Permission.AddDataset, dv);
+            for (AuthenticatedUser au : userList) {
+                logger.log(Level.INFO, "creatDataFile - User: " + au.getIdentifier());
+            }
+            logger.log(Level.INFO, "creatDataFile - Datafile: " + file.getAbsolutePath());
 
             if (permissionServiceBean.userOn(user, dataset.getOwner()).has(Permission.AddDataset)) {
 

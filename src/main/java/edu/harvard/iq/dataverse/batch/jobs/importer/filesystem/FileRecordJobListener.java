@@ -5,7 +5,6 @@ import edu.harvard.iq.dataverse.Dataset;
 import edu.harvard.iq.dataverse.DatasetServiceBean;
 import edu.harvard.iq.dataverse.UserNotification;
 import edu.harvard.iq.dataverse.UserNotificationServiceBean;
-import edu.harvard.iq.dataverse.UserServiceBean;
 import edu.harvard.iq.dataverse.actionlogging.ActionLogServiceBean;
 import edu.harvard.iq.dataverse.authorization.AuthenticationServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
@@ -109,10 +108,12 @@ public class FileRecordJobListener implements StepListener, JobListener {
 
             if (jobParams.containsKey("userPrimaryKey")) {
                 long userPrimaryKey = Long.parseLong(jobParams.getProperty("userPrimaryKey"));
+                logger.log(Level.INFO, "FileRecordJobListener - userPrimaryKey: " + userPrimaryKey);
                 user = authenticationServiceBean.findByID(userPrimaryKey);
             }
             if (jobParams.containsKey("userId")) {
                 String userId = jobParams.getProperty("userId");
+                logger.log(Level.INFO, "FileRecordJobListener - userId: " + userId);
                 user = authenticationServiceBean.getAuthenticatedUser(userId);
             }
 
@@ -128,6 +129,7 @@ public class FileRecordJobListener implements StepListener, JobListener {
             long datasetVersionId = dataset.getLatestVersion().getId();
 
             logger.log(Level.INFO, "FileRecordJobListener Dataset: " + dataset.getGlobalId());
+            logger.log(Level.INFO, "FileRecordJobListener DatasetVersionId: " + datasetVersionId);
 
             JobExecution jobExecution = jobOperator.getJobExecution(jobContext.getInstanceId());
             if (jobExecution != null) {
