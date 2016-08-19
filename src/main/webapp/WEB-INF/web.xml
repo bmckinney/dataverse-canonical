@@ -17,6 +17,7 @@
     <!-- Welcome page -->
     <welcome-file-list>
         <welcome-file>dataverse.xhtml</welcome-file>
+        <welcome-file>index.html</welcome-file>
     </welcome-file-list>
     <context-param>
         <param-name>org.jboss.weld.context.conversation.lazy</param-name>

@@ -1,0 +1,429 @@
+swagger: '2.0'
+info:
+  title: Dataverse API
+  description: Open source research data repository software
+  version: "4.4"
+host: dv.sbgrid.org
+#host: localhost:8080
+schemes:
+  - https
+#  - http
+basePath: /api
+produces:
+  - application/json
+securityDefinitions:
+  UserSecurity:
+    type: apiKey
+    in: header
+    name: X-Dataverse-key
+paths:
+  /admin/settings/:DataCaptureModuleUrl:
+    put:
+      consumes:
+        - application/text
+      summary: sets the DCM URL
+      description: |
+        <p>Sets the base URL for the DCM implementation server.</p>
+        <p>Set this value to 'mock' for testing. This will bypass the implementation
+        server and set the rsync script to "script goes here" in all cases.</p>
+      parameters:
+        - name: body
+          in: body
+          description: The DCM implementation server's base URL.
+          required: true
+          schema:
+            type: string
+            example: "https://datacapture.example.org"
+        - name: X-Dataverse-key
+          in: header
+          description: Dataverse API key of admin user.
+          required: true
+          type: string
+      tags:
+        - "Data Capture Module"
+      responses:
+        "200":
+          description: "Setting response"
+          schema:
+            $ref: "#/definitions/DataCaptureModuleUrl"
+        "401":
+          description: "Unknown API key, insufficient permissions"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+  /dataverses/{id}/uploadmechanisms:
+    get:
+      summary: gets upload methods
+      description: |
+        <p>Gets the list of supported upload methods for the dataverse's <i>(small d)</i> datasets.</p>
+        <p>Currently, the following methods are supported:
+        <ul>
+        <li>STANDARD (browser uploads)</li>
+        <li>RSYNC</li>
+        </ul>
+        </p>
+      parameters:
+        - name: id
+          in: path
+          description: Dataset identifier.
+          required: true
+          type: string
+        - name: X-Dataverse-key
+          in: header
+          description: Dataverse API key of admin user.
+          required: true
+          type: string
+      tags:
+        - "Data Capture Module"
+      responses:
+        "200":
+          description: "Post response"
+          schema:
+            $ref: "#/definitions/GetUploadMechanisms"
+        "401":
+          description: "Unknown API key, insufficient permissions"
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Unable to locate dataverse with specified id"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      consumes:
+        - application/text
+      summary: sets upload methods
+      description: |
+        <p>Sets the list of supported upload methods for the dataverse's <i>(small d)</i> datasets.</p>
+        <p>Currently, the following methods are supported:
+        <ul>
+        <li>STANDARD browser uploads)</li>
+        <li>RSYNC</li>
+        </ul>
+        </p>
+      parameters:
+        - name: body
+          in: body
+          description: A colon-separated list of supported upload methods.
+          required: true
+          schema:
+            type: string
+            example: "STANDARD:RSYNC"
+        - name: id
+          in: path
+          description: Dataset identifier.
+          required: true
+          type: string
+        - name: X-Dataverse-key
+          in: header
+          description: Dataverse API key of admin user.
+          required: true
+          type: string
+      tags:
+        - "Data Capture Module"
+      responses:
+        "200":
+          description: "Post response"
+          schema:
+            $ref: "#/definitions/SetUploadMechanisms"
+        "401":
+          description: "Unknown API key, insufficient permissions"
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Unable to locate dataverse with specified id"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+  /datasets/{id}/dataCaptureModule/rsync:
+    get:
+      summary: gets an rsync script
+      description: |
+        <p>The rsync endpoint issues a request for an rsync
+        script used by the dataset depositor to upload large sets of files.
+        The response includes the user identifier dataset id (primary key), dataset identifier and the script itself.</p>
+        <p>The response may take more than a minute since script requests may be
+        fulfilled by a cron job. Set the optional sleep parameter accordingly.</p>
+        <p>Preconditions:
+        <ol>
+        <li>The DataCaptureModuleUrl has been set for the Dataverse instance (big D).</li>
+        <li>The dataset's parent dataverse (small d) includes "RSYNC" as one of its upload mechanisms.</li>
+        <li>The API key belongs to a user who has edit privileges for the dataset.</li>
+        </ol>
+        </p>
+        <p>Actions performed:
+        <ol>
+        <li>An upload request is sent to the rsync DCM implementation (ur.py). Example:
+        {"userId" : "dataverseAdmin", "datasetId" : 57, "datasetIdentifier" : "ZVBNSE"}
+        </li>
+        <li>After a pause, a script request is sent to the rsync DCM implementation (sr.py).</li>
+        <li>If a script is retrieved, it is saved in the dataset's rsyncscript property.</li>
+        </ol>
+        </p>
+        <p>TODO:
+        <ol>
+        <li>Make the rsync upload and script request endpoints configurable (currently hardcoded in
+        DataCaptureModuleServiceBean)</li>
+        </ol>
+        </p>
+      parameters:
+        - name: id
+          in: path
+          description: Dataset id (primary key in database).
+          required: true
+          type: integer
+        - name: X-Dataverse-key
+          in: header
+          description: Dataverse API key of depositing user.
+          required: true
+          type: string
+        - name: sleep
+          in: query
+          description: Milliseconds to wait for rsync script to be generated.
+          required: false
+          default: 0
+          type: integer
+      tags:
+        - "Data Capture Module"
+      responses:
+        "200":
+          description: "Rsync script response"
+          schema:
+            $ref: "#/definitions/Rsync"
+        "401":
+          description: "Unknown API key, insufficient permissions"
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Unable to locate dataset with specified id"
+          schema:
+            $ref: "#/definitions/Error"
+        "501":
+          description: "Rsync not supported"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+  /datasets/dataCaptureModule/checksumValidation:
+    post:
+      consumes:
+        - application/json
+      summary: sets checksum result
+      description: |
+        <p>The DCM implementation server is responsible for reporting the checksum validation result back to Dataverse
+        after the depositing user has completed running the rsync script.</p>
+        <p>If the result is "validation passed" a FileSystemImportJob batch job is started. After the batch job
+        is completed, the depositing user will be notified (via Dataverse notifications and email).</p>
+        <p>If the result is "validation failed" the depositing user will be notified.</p>
+        <p>A detailed status report of the FileSystemImportJob can be polled using the jobStatusUrl from the response.</p>
+      parameters:
+        - name: body
+          in: body
+          description: JSON object reporting checksum validation result.
+          required: true
+          schema:
+            $ref: "#/definitions/ChecksumValidationRequest"
+        - name: X-Dataverse-key
+          in: header
+          description: API key of Dataverse super user.
+          required: true
+          type: string
+      tags:
+        - "Data Capture Module"
+      responses:
+        "200":
+          description: "Validation script response"
+          schema:
+            $ref: "#/definitions/ChecksumValidationResponse"
+        "401":
+          description: "Unknown API key, insufficient permissions"
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Unable to locate dataset with specified id"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  Rsync:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        description: Status of the response
+        example: OK
+      data:
+        $ref: "#/definitions/Script"
+  Script:
+    type: object
+    properties:
+      userId:
+        type: string
+        description: Depositing user identifier
+        example: testUser
+      datasetId:
+        type: integer
+        description: Dataset's primary key in the database
+        example: 57
+      datasetIdentifier:
+        type: string
+        description: Dataset's unique identifier
+        example: ZVBNSE
+      script:
+        type: string
+        description: The rsync script generated by the Data Capture Module implementation
+        example: "shell script contents"
+  DataCaptureModuleUrl:
+    type: object
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        description: Status of the response
+        example: OK
+      data:
+        type: object
+        properties:
+          DataCaptureModuleUrl:
+            type: string
+            description: DCM base URL.
+            example: "https://datacapture.example.org"
+  DataCaptureModuleUrlBody:
+    type: string
+    description: Base url for the DCM implementation server
+  SetUploadMechanisms:
+    type: object
+    required:
+      - status
+      - data
+    properties:
+      status:
+        type: string
+        description: Status of the operation
+        example: OK
+      data:
+        type: object
+        properties:
+          message:
+            type: string
+            description: Status of the operation
+            example: "File upload mechanisms of dataverse 7d308a66 updated."
+  GetUploadMechanisms:
+    type: object
+    required:
+      - status
+      - data
+    properties:
+      status:
+        type: string
+        description: Status of the response
+        example: "OK"
+      data:
+        type: array
+        items:
+          type: string
+          enum:
+            - STANDARD
+            - RSYNC
+        example: ["STANDARD", "RSYNC"]
+  ChecksumValidationRequest:
+    type: object
+    required:
+      - userId
+      - datasetId
+      - datasetIdentifier
+      - status
+    properties:
+      userId:
+        type: string
+        description: Depositing user identifier
+        example: dataverseAdmin
+      datasetId:
+        type: integer
+        description: Dataset id (primary key in database)
+        example: 57
+      datasetIdentifier:
+        type: string
+        description: Dataset identifier (part of global ID)
+        example: ZVBNSE
+      status:
+        type: string
+        description: Status message for failed/passed checksum validation
+        example: "validation passed"
+        enum:
+          - "validation passed"
+          - "validation failed"
+  ChecksumValidationResponse:
+    type: object
+    required:
+      - status
+      - data
+    properties:
+      status:
+        type: string
+        description: Status of the request.
+        example: "OK"
+      data:
+        type: object
+        required:
+          - jobId
+          - jobStatusUrl
+          - userId
+          - datasetId
+          - datasetIdentifier
+          - message
+        properties:
+          jobId:
+            type: integer
+            description: The batch job's execution identifier
+            example: 100
+          jobStatusUrl:
+            type: string
+            description: The status URL of the FileSystemImportJob
+            example: "https://dv.sbgrid.org/api/batch/job/100"
+          userId:
+            type: string
+            description: Depositing user identifier
+            example: testUser
+          datasetId:
+            type: integer
+            description: Dataset's primary key in the database
+            example: 57
+          datasetIdentifier:
+            type: string
+            description: Dataset's unique identifier
+            example: ZVBNSE
+          message:
+            type: string
+            description: The status of the FileSystemImportJob
+            example: "FileSystemImportJob was started."
+  Error:
+    required:
+      - status
+      - message
+    properties:
+      status:
+        type: string
+        enum:
+          - ERROR
+          - WARNING
+          - INFO
+      message:
+        type: string
