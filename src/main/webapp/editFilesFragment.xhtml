@@ -268,22 +268,20 @@
                                     <p style="text-align: center">#{bundle['file.fromRsync.request']}</p>
                                </ui:fragment>
                                 <ui:fragment rendered="#{!datasetPage}">
-                                    <p style="text-align: center">#{bundle['file.fromRsync.instructions']}</p>
                                     <p:commandLink id="rsyncScriptDownloadLink"
                                                    type="button"
                                                    styleClass="btn btn-default"
                                                    actionListener="#{EditDatafilesPage.generateRsyncScript()}"
                                                    oncomplete="window.location = '/api/datasets/#{EditDatafilesPage.dataset.id}/dataCaptureModule/rsyncScript';return false;">
-                                        <span class="glyphicon glyphicon-download-alt"></span> Download Rsync Script
+                                        <span class="glyphicon glyphicon-download-alt"></span> Rsync Script
                                     </p:commandLink>
-
-                                    <!--<a id="rsyncScriptDownloadLink2" href="#"-->
-                                       <!--class="ui-commandlink ui-widget btn btn-default"-->
-                                       <!--onclick="window.location = '/api/datasets/#{EditDatafilesPage.dataset.id}/dataCaptureModule/rsyncScript';return false;"-->
-                                       <!--type="button">-->
-                                        <!--<span class="glyphicon glyphicon-download-alt"></span> Download Rsync Script-->
-                                    <!--</a>-->
-                                </ui:fragment>
+                                    <p style="text-align: center; margin-top: 20px;">
+                                        #{bundle['file.fromRsync.instructions']}
+                                    </p>
+                                    <p style="text-align: center; margin-top: 20px;">
+                                        <img src="/resources/images/asciicast.gif" />
+                                    </p>
+                              </ui:fragment>
                             </div>
                         </div>
                         <p:commandButton
