@@ -55,7 +55,8 @@ public class Dataset extends DvObjectContainer {
          * is not allowed. This option requires setup of the Data Capture
          * Module.
          */
-        RSYNC
+        RSYNC,
+        DROPBOX
     };
 
 //    public static final String REDIRECT_URL = "/dataset.xhtml?persistentId=";

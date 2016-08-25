@@ -25,6 +25,9 @@
                  alt="#{bundle['file.fromRsync.heading']}"
                  style="width:200px; display: block; margin-left: auto; margin-right: auto;"/>
             <p style="text-align: center">#{bundle['file.fromRsync.instructions']}</p>
+            <p style="text-align: center; margin-top: 20px;">
+                <img src="/resources/images/asciicast.gif" />
+            </p>
 
             <div id="syncUploadDiv" style="display: block; width: 90%; margin: 0 auto; text-align: center;">
                 <a id="rsyncScriptDownloadLink2" href="#"
@@ -48,6 +51,26 @@
                  rendered="#{empty DatasetPage.editMode and (DatasetPage.workingVersion != null)}"
                  emptyMessage="#{bundle['file.notFound.tip']}">
         <f:facet name="header">
+
+            <div id="rsyncLocations"
+                 style="text-align: left; padding: 30px;"
+                 class="panel panel-default margin-bottom"
+                 jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas)
+                                    and DatasetPage.workingVersion.fileMetadatas.size() > 1)
+                                    and DatasetPage.downloadButtonAvailable
+                                    and (DatasetPage.dataset.getRsyncScript().length() gt 0)}">
+                <div style="color: #31708f; font-weight: 700; margin-bottom: 20px;">Download Instructions</div>
+                <p style='color: #616161'>1. If this dataset is locally available, it should be accessable at <code style='color:#000000'>/programs/datagrid/#{DatasetPage.dataset.identifier}</code></p>
+                <p style="color: #616161"> 2. To download this dataset, please run the following command from your Terminal on a Linux or OS X workstation:</p>
+                <p style="color:#616161"><code style='color:#000000'>'rsync -av rsync://dv.sbgrid.org/#{DatasetPage.dataset.globalId} .'</code> (Harvard Medical School, USA)</p>
+                <p style='color: #616161'>Depending on your location, faster access may be available from a Tier 1 site closer to your location</p>
+                <p style="color:#616161"><code style='color:#000000'>'rsync -av rsync://sbgrid.icm.uu.se/#{DatasetPage.dataset.globalId} .'</code> (Uppsala University, Sweden)</p>
+                <p style="color:#616161"><code style='color:#000000'>'rsync -av rsync://sbgrid.pasteur.edu.uy/#{DatasetPage.dataset.globalId} .'</code> (Institut Pasteur de Montevideo, Uruguay)</p>
+                <p style="color:#616161"><code style='color:#000000'>'rsync -av rsync://sbgrid.ncpss.org/#{DatasetPage.dataset.globalId} .'</code> (Shanghai Institutes for Biological Sciences, China)</p>
+                <p style="padding-top: 15px; color: #616161"> 3. After the transfer is completed, please issue the following command to verify data integrity:</p>
+                <p><code style='color:#000000'>'cd #{DatasetPage.dataset.identifier} ; shasum -c files.sha'</code></p>
+            </div>
+
             <div jsf:id="filesHeaderBlock" class="row"
                  jsf:rendered="#{(DatasetPage.fileMetadatasSearch.size() gt 0) or (DatasetPage.dataset.getRsyncScript() == null)}">
                 <div class="form-horizontal col-sm-7 col-xs-9 text-left">
@@ -81,10 +104,11 @@
                                          or (!(empty DatasetPage.workingVersion.fileMetadatas) and DatasetPage.workingVersion.fileMetadatas.size() > 1))}">
                         <h:outputLink value="/editdatafiles.xhtml?datasetId=#{DatasetPage.dataset.id}&#38;mode=UPLOAD"
                                       type="button" styleClass="btn btn-default #{DatasetPage.locked ? 'ui-state-disabled' : ''}"
-                                      disabled="#{DatasetPage.locked}" rendered="#{DatasetPage.sessionUserAuthenticated 
-                                                                                    and DatasetPage.canUpdateDataset()
-                                                                                    and !widgetWrapper.widgetView}">
-                            <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/> <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
+                                      disabled="#{DatasetPage.locked}"
+                                      rendered="#{DatasetPage.sessionUserAuthenticated
+                                      and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
+                            <span class="glyphicon #{DatasetPage.locked ? 'glyphicon-ban-circle' : 'glyphicon-plus'}"/>
+                            <h:outputText id="uploadFile-s-Link" value="#{bundle['file.uploadFiles']}"/>
                         </h:outputLink>
                         <div class="btn-group" jsf:rendered="#{DatasetPage.sessionUserAuthenticated
                                              and DatasetPage.canUpdateDataset() and !widgetWrapper.widgetView}">
@@ -124,8 +148,10 @@
                             </ul>
                             <p:remoteCommand  name="openEditFilesPageCommand2" partialSubmit="true" async="true" update="" action="#{DatasetPage.editFileMetadata()}"  />
                         </div>
+
                         <div jsf:id="downloadButtonBlock" class="btn-group" jsf:rendered="#{(!(empty DatasetPage.workingVersion.fileMetadatas) 
-                                                               and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable}">
+                                                               and DatasetPage.workingVersion.fileMetadatas.size() > 1) and DatasetPage.downloadButtonAvailable
+                                                               and (DatasetPage.dataset.getRsyncScript().length() lt 1) }">
                             <p:commandLink rendered="#{!(DatasetPage.downloadPopupRequired)}"
                                            type="button" styleClass="btn btn-default"
                                            disabled="#{DatasetPage.locked}"
@@ -142,6 +168,7 @@
                                 <span class="glyphicon glyphicon-download-alt"/> #{bundle.download}
                             </p:commandLink>
                         </div>
+
                         <p:commandLink rendered="#{DatasetPage.fileAccessRequestMultiButtonRequired}"
                                        type="button" styleClass="btn btn-default"
                                        update="@form" action="#{DatasetPage.requestAccessMultipleFiles(DatasetPage.selectedFilesIdsString)}"

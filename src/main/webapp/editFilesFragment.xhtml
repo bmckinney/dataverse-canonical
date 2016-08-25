@@ -38,7 +38,7 @@
                                     id="standardContinue"
                                     value="#{bundle['file.fromStandard.continue']}"
                                     style="display: block; margin: 0 auto;"
-                                    onclick="document.getElementById('datasetForm:standardCancel').style.display = 'block'; document.getElementById('fileUploadDiv').style.display = 'block'; this.style.display = 'none'; document.getElementById('rsyncUploadBlock').style.display = 'none';"/>
+                                    onclick="document.getElementById('datasetForm:standardCancel').style.display = 'block'; document.getElementById('fileUploadDiv').style.display = 'block'; this.style.display = 'none'; document.getElementById('rsyncUploadBlock').style.display = 'none'; document.getElementById('dropboxUploadBlock').style.display = 'none';"/>
                         </div>
                         <div id="fileUploadDiv" style="display: none; width: 90%; margin: 0 auto;">
                             <!-- Upload -->
@@ -238,7 +238,7 @@
                                 id="standardCancel"
                                 value="#{bundle['file.fromStandard.cancel']}"
                                 style="display: none; margin: 0 auto; margin-bottom: 10px;"
-                                onclick="document.getElementById('datasetForm:standardContinue').style.display = 'block'; document.getElementById('fileUploadDiv').style.display = 'none'; this.style.display = 'none'; document.getElementById('rsyncUploadBlock').style.display = 'block';"/>
+                                onclick="document.getElementById('datasetForm:standardContinue').style.display = 'block'; document.getElementById('fileUploadDiv').style.display = 'none'; this.style.display = 'none'; document.getElementById('rsyncUploadBlock').style.display = 'block'; document.getElementById('dropboxUploadBlock').style.display = 'block';"/>
                     </div>
                     <!-- End Standard Upload -->
 
@@ -260,7 +260,7 @@
                                     value="#{bundle['file.fromRsync.continue']}"
                                     style="display: block; margin: 0 auto;"
                                     actionListener="#{EditDatafilesPage.dataset.setRsyncScript('requested')}"
-                                    onclick="document.getElementById('datasetForm:rsyncCancel').style.display = 'block'; document.getElementById('syncUploadDiv').style.display = 'block'; this.style.display = 'none'; document.getElementById('standardUploadBlock').style.display = 'none';"
+                                    onclick="document.getElementById('datasetForm:rsyncCancel').style.display = 'block'; document.getElementById('syncUploadDiv').style.display = 'block'; this.style.display = 'none'; document.getElementById('standardUploadBlock').style.display = 'none'; document.getElementById('dropboxUploadBlock').style.display = 'none';"
                             />
 
                             <div id="syncUploadDiv" style="display: none; width: 90%; margin: 0 auto; text-align: center;">
@@ -289,21 +289,50 @@
                                 value="#{bundle['file.fromRsync.cancel']}"
                                 style="display: none; margin: 0 auto; margin-bottom: 10px;"
                                 actionListener="#{EditDatafilesPage.dataset.setRsyncScript('')}"
-                                onclick="document.getElementById('datasetForm:rsyncContinue').style.display = 'block'; document.getElementById('syncUploadDiv').style.display = 'none'; this.style.display = 'none'; document.getElementById('standardUploadBlock').style.display = 'block';"/>
+                                onclick="document.getElementById('datasetForm:rsyncContinue').style.display = 'block'; document.getElementById('syncUploadDiv').style.display = 'none'; this.style.display = 'none'; document.getElementById('standardUploadBlock').style.display = 'block'; document.getElementById('dropboxUploadBlock').style.display = 'block';"/>
                     </div>
 
                     <!-- Dropbox Upload -->
                     <div id="dropboxUploadBlock"
                          class="panel panel-default margin-bottom"
-                         jsf:rendered="#{!empty EditDatafilesPage.dropBoxKey}">
+                         style="width: 90%; margin: 20px auto;"
+                         jsf:rendered='#{EditDatafilesPage.dataset.getDataverseContext().getFileUploadMechanisms().toUpperCase().contains("DROPBOX")}'>
                         <div class="panel-body">
-                            <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
-                            <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
-                            <p:commandButton value="#{bundle['file.fromDropbox']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
-                            <p class="help-block">#{bundle['file.fromDropbox.tip']}</p>
+                            <p style="font-size: 1.3em; color: #808080; padding: 20px; text-align: center">
+                                #{bundle['file.fromDropbox.heading']}
+                            </p>
+                            <img src="/resources/images/#{bundle['file.fromDropbox.icon']}"
+                                 alt="#{bundle['file.fromDropbox.heading']}"
+                                 style="width:200px; display: block; margin-left: auto; margin-right: auto;"/>
+                            <p style="text-align: center">#{bundle['file.fromDropbox.tip']}</p>
+                            <p:commandButton
+                                    id="dropboxContinue"
+                                    value="#{bundle['file.fromDropbox.continue']}"
+                                    style="display: block; margin: 0 auto;"
+                                    onclick="document.getElementById('datasetForm:dropboxCancel').style.display = 'block'; document.getElementById('dropboxUploadDiv').style.display = 'block'; this.style.display = 'none'; document.getElementById('standardUploadBlock').style.display = 'none'; document.getElementById('rsyncUploadBlock').style.display = 'none';"
+                            />
+
+                            <div id="dropboxUploadDiv" style="display: none; width: 90%; margin: 0 auto; text-align: center;">
+                                <ui:fragment>
+                                    <div class="panel-body">
+                                        <h:inputText id="dropBoxSelectionInput" style="display:none" value="#{EditDatafilesPage.dropBoxSelection}"/>
+                                        <p:commandButton  id="dropBoxButton" actionListener="#{EditDatafilesPage.handleDropBoxUpload}" update="filesTable,dropBoxUploadMessage" style="display:none;" />
+                                        <p:commandButton value="#{bundle['file.fromDropbox.heading']}" onclick="openDropboxChooser();" icon="dropin-btn-status" />
+                                        <p class="help-block" style="margin-top: 20px;">#{bundle['file.fromDropbox.instructions']}</p>
+                                    </div>
+                                    <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+                                </ui:fragment>
+                            </div>
                         </div>
-                        <p:message for="dropBoxButton" id="dropBoxUploadMessage" display="text" />
+                        <p:commandButton
+                                id="dropboxCancel"
+                                value="#{bundle['file.fromDropbox.cancel']}"
+                                style="display: none; margin: 0 auto; margin-bottom: 10px;"
+                                actionListener="#{EditDatafilesPage.dataset.setRsyncScript('')}"
+                                onclick="document.getElementById('datasetForm:dropboxContinue').style.display = 'block'; document.getElementById('dropboxUploadDiv').style.display = 'none'; this.style.display = 'none'; document.getElementById('standardUploadBlock').style.display = 'block'; document.getElementById('rsyncUploadBlock').style.display = 'block';"/>
                     </div>
+
+
                     <p:message for="fileUpload" id="uploadMessage" display="text" />
 
 
