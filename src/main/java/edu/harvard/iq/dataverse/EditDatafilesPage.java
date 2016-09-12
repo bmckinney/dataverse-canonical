@@ -1919,7 +1919,7 @@ public class EditDatafilesPage implements java.io.Serializable {
 
     public void generateRsyncScript() {
         try {
-            commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset, 90000));
+            commandEngine.submit(new RequestRsyncScriptCommand(dvRequestService.getDataverseRequest(), dataset));
         } catch (CommandException ex) {
             logger.info("CommandException caught calling RequestRsyncScriptCommand: " + ex.getMessage());
         }

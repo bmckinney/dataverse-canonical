@@ -40,7 +40,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
 
     private final Dataset dataset;
     private final DataverseRequest request;
-    private long millisecondsToSleep = 90000;
+    private long millisecondsToSleep = 30000;
 
     public RequestRsyncScriptCommand(DataverseRequest requestArg, Dataset datasetArg) {
         super(requestArg, datasetArg);
@@ -63,6 +63,10 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
         User user = request.getUser();
         AuthenticatedUser authenticatedUser;
         Dataset updatedDataset;
+
+        Long datasetId = dataset.getId();
+        String userId = user.getIdentifier();
+        String datasetIdentifier = dataset.getIdentifier();
 
         /**
          * @todo get Permission.AddDataset from above somehow rather than duplicating it here.
@@ -100,7 +104,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
         // [2] set the script as pending
         updatedDataset = ctxt.dataCaptureModule().persistRsyncScript(dataset, "pending");
 
-        // [3] wait for cron job, 90 seconds to be safe?
+        // [3] wait for cron job
         try {
             Thread.sleep(millisecondsToSleep);
         } catch (InterruptedException ex) {
@@ -125,9 +129,6 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
                     ex.getLocalizedMessage());
         }
 
-        int datasetId = response.getBody().getObject().getInt("datasetId");
-        String userId = response.getBody().getObject().getString("userId");
-        String datasetIdentifier = response.getBody().getObject().getString("datasetIdentifier");
         String script = response.getBody().getObject().getString("script");
 
         logger.log(Level.INFO, "sr.py: datasetId: " + datasetId);
@@ -139,7 +140,7 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
         }
         if (datasetId != dataset.getId()) {
             throw new RuntimeException("DCM request: " + dcmRequest +
-                    " The dataset Id doesn't match: " + Integer.toString(datasetId) + " - " +
+                    " The dataset Id doesn't match: " + Long.toString(datasetId) + " - " +
                     Long.toString(dataset.getId()));
         }
 
@@ -155,6 +156,15 @@ public class RequestRsyncScriptCommand extends AbstractCommand<JsonObjectBuilder
                 .add("script", script);
 
         return nullSafeJsonBuilder;
+
+//        NullSafeJsonBuilder nullSafeJsonBuilder = jsonObjectBuilder()
+//                .add("userId", userId)
+//                .add("datasetId", datasetId)
+//                .add("datasetIdentifier", datasetIdentifier)
+//                .add("message", "script requested");
+//
+//        return nullSafeJsonBuilder;
+
     }
 
 }
