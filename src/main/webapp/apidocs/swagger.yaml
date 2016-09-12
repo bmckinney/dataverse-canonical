@@ -63,12 +63,13 @@ paths:
         <ul>
         <li>STANDARD (browser uploads)</li>
         <li>RSYNC</li>
+        <li>DROPBOX (requires api key)</li>
         </ul>
         </p>
       parameters:
         - name: id
           in: path
-          description: Dataset identifier.
+          description: dataverse identifier.
           required: true
           type: string
         - name: X-Dataverse-key
@@ -105,6 +106,7 @@ paths:
         <ul>
         <li>STANDARD browser uploads)</li>
         <li>RSYNC</li>
+        <li>DROPBOX (requires api key)</li>
         </ul>
         </p>
       parameters:
@@ -113,11 +115,10 @@ paths:
           description: A colon-separated list of supported upload methods.
           required: true
           schema:
-            type: string
-            example: "STANDARD:RSYNC"
+            $ref: "#/definitions/SetUploadMechanismBody"
         - name: id
           in: path
-          description: Dataset identifier.
+          description: dataverse identifier.
           required: true
           type: string
         - name: X-Dataverse-key
@@ -158,6 +159,7 @@ paths:
         <li>The DataCaptureModuleUrl has been set for the Dataverse instance (big D).</li>
         <li>The dataset's parent dataverse (small d) includes "RSYNC" as one of its upload mechanisms.</li>
         <li>The API key belongs to a user who has edit privileges for the dataset.</li>
+        <li>If using Apache in front of Glassfish, set ProxyTimeout to 300 in httpd.conf to support longer requests</li>
         </ol>
         </p>
         <p>Actions performed:
@@ -192,6 +194,65 @@ paths:
           required: false
           default: 0
           type: integer
+      tags:
+        - "Data Capture Module"
+      responses:
+        "200":
+          description: "Rsync script response"
+          schema:
+            $ref: "#/definitions/Rsync"
+        "401":
+          description: "Unknown API key, insufficient permissions"
+          schema:
+            $ref: "#/definitions/Error"
+        "404":
+          description: "Unable to locate dataset with specified id"
+          schema:
+            $ref: "#/definitions/Error"
+        "501":
+          description: "Rsync not supported"
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      consumes:
+        - application/text
+      summary: sets an rsync script
+      description: |
+        <p>This rsync endpoint issues a request to set the rsync script for a dataset.</p>
+        <p>Preconditions:
+        <ol>
+        <li>The DataCaptureModuleUrl has been set for the Dataverse instance (big D).</li>
+        <li>The dataset's parent dataverse (small d) includes "RSYNC" as one of its upload mechanisms.</li>
+        <li>The API key belongs to a Dataverse super user.</li>
+        </ol>
+        </p>
+        <p>Actions performed:
+        <ol>
+        <li>The body of this request is saved in the dataset's rsyncscript property.</li>
+        </ol>
+        </p>
+        </p>
+      parameters:
+        - name: id
+          in: path
+          description: Dataset id (primary key in database).
+          required: true
+          type: integer
+        - name: body
+          in: body
+          description: The rsync script.
+          required: true
+          schema:
+            $ref: "#/definitions/RsyncScriptBody"
+        - name: X-Dataverse-key
+          in: header
+          description: API key of Dataverse super user.
+          required: true
+          type: string
       tags:
         - "Data Capture Module"
       responses:
@@ -325,6 +386,10 @@ definitions:
             type: string
             description: Status of the operation
             example: "File upload mechanisms of dataverse 7d308a66 updated."
+  SetUploadMechanismBody:
+    type: string
+    description: A colon-separated list of supported upload methods
+    example: STANDARD:RSYNC:DROPBOX
   GetUploadMechanisms:
     type: object
     required:
@@ -342,6 +407,7 @@ definitions:
           enum:
             - STANDARD
             - RSYNC
+            - DROPBOX
         example: ["STANDARD", "RSYNC"]
   ChecksumValidationRequest:
     type: object
@@ -414,6 +480,10 @@ definitions:
             type: string
             description: The status of the FileSystemImportJob
             example: "FileSystemImportJob was started."
+  RsyncScriptBody:
+    type: string
+    description: The contents of the rsync script
+    example: Contents of script go here...
   Error:
     required:
       - status
