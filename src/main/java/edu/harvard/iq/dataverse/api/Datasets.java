@@ -19,6 +19,7 @@ import edu.harvard.iq.dataverse.authorization.Permission;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.datacapturemodule.DataCaptureModuleServiceBean;
 import edu.harvard.iq.dataverse.engine.command.Command;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.impl.AssignRoleCommand;
@@ -112,6 +113,9 @@ public class Datasets extends AbstractApiBean {
 
     @EJB
     PermissionServiceBean permissionServiceBean;
+
+    @EJB
+    DataCaptureModuleServiceBean dataCaptureModuleServiceBean;
 
     /**
      * Used to consolidate the way we parse and handle dataset versions.
@@ -674,6 +678,46 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    @POST
+    @Path("{id}/dataCaptureModule/rsync")
+    public Response setRsync(@PathParam("id") String id, String script) {
+        try {
+
+            // only superusers should run this
+            User superUser = findUserOrDie();
+            if (!superUser.isSuperuser()) {
+                return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
+            }
+
+            Dataset dataset = findDatasetOrDie(id);
+            String uploadMethods = dataset.getDataverseContext().getFileUploadMechanisms();
+            if (StringUtils.isNotEmpty(uploadMethods) && uploadMethods.toUpperCase().contains("RSYNC")) {
+
+                try {
+                    Dataset updated = dataCaptureModuleServiceBean.persistRsyncScript(dataset, script.trim());
+
+                    // return json
+                    JsonObjectBuilder bld = jsonObjectBuilder();
+                    return this.okResponse(bld
+                            .add("userId", superUser.getIdentifier())
+                            .add("datasetId", updated.getId())
+                            .add("datasetIdentifier", updated.getIdentifier())
+                            .add("script", updated.getRsyncScript())
+                    );
+
+                } catch (Exception ex) {
+                    return errorResponse(Response.Status.BAD_REQUEST, ex.getMessage());
+                }
+
+            } else {
+                return errorResponse(Response.Status.NOT_IMPLEMENTED,
+                        "Parent dataverse doesn't support rsync transfers for dataset: " + id);
+            }
+        }  catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+
     /**
      * User authentication is handled in two ways
      * 1) the endpoint requires a dataverse superuser api key
@@ -684,6 +728,8 @@ public class Datasets extends AbstractApiBean {
     @Path("dataCaptureModule/checksumValidation")
     public Response receiveChecksumValidationResults(JsonObject result) {
 
+        LOGGER.log(Level.INFO, "receiveChecksumValidationResults API called...");
+
         String passed = "validation passed";
         String failed = "validation failed";
 
@@ -693,6 +739,7 @@ public class Datasets extends AbstractApiBean {
             // only superusers should run this
             User superUser = findUserOrDie();
             if (!superUser.isSuperuser()) {
+                LOGGER.log(Level.SEVERE, "Not a superuser");
                 return errorResponse(Response.Status.FORBIDDEN, "Not a superuser");
             }
 
@@ -702,11 +749,15 @@ public class Datasets extends AbstractApiBean {
             int datasetid = result.getInt("datasetId");
 
             if (StringUtils.isEmpty(status)) {
+                LOGGER.log(Level.SEVERE,
+                        "Checksum validation response is missing a status message: " + result.toString());
                 return errorResponse(Response.Status.BAD_REQUEST,
                         "Checksum validation response is missing a status message: " + result.toString());
             }
 
             if (StringUtils.isEmpty(datasetIdentifier)) {
+                LOGGER.log(Level.SEVERE,
+                        "Checksum validation response is missing a dataset Identifier: " + result.toString());
                 return errorResponse(Response.Status.BAD_REQUEST,
                         "Checksum validation response is missing a dataset Identifier: " + result.toString());
             }
@@ -722,11 +773,15 @@ public class Datasets extends AbstractApiBean {
                     LOGGER.log(Level.INFO, "User: " + au.getIdentifier());
                 }
                 if (!permissionServiceBean.userOn(depositingUser, dv).has(Permission.AddDataset)) {
+                    LOGGER.log(Level.SEVERE,
+                            "User " + userid + " doesn't have sufficient permission to import files into dataset " +
+                                    datasetIdentifier);
                     return errorResponse(Response.Status.FORBIDDEN,
                             "User " + userid + " doesn't have sufficient permission to import files into dataset " +
                                     datasetIdentifier);
                 }
             } else {
+                LOGGER.log(Level.SEVERE, "Checksum validation response is missing a user ID: " + result.toString());
                 return errorResponse(Response.Status.BAD_REQUEST,
                         "Checksum validation response is missing a user ID: " + result.toString());
             }
@@ -745,7 +800,7 @@ public class Datasets extends AbstractApiBean {
                 JsonObjectBuilder bld = jsonObjectBuilder();
                 return this.okResponse(bld
                         .add("jobId", jid)
-                        .add("jobStatusUrl", "https://dv.sbgrid.com/api/batch/job/" + jid)
+                        .add("jobStatusUrl", "https://dv.sbgrid.org/api/batch/job/" + jid)
                         .add("datasetId", datasetid)
                         .add("datasetIdentifier", datasetIdentifier)
                         .add("userId", userid)
@@ -754,15 +809,18 @@ public class Datasets extends AbstractApiBean {
 
             // FAILED
             } else if (failed.equals(status)) {
+                LOGGER.log(Level.SEVERE, "User notified about checksum validation failure.");
                 userNotificationSvc.sendNotification(depositingUser, new Timestamp(new Date().getTime()),
                         UserNotification.Type.CHECKSUMFAIL, dataset.getId());
                 return okResponse("User notified about checksum validation failure.");
 
             // OTHER
             } else {
+                LOGGER.log(Level.SEVERE, "Unexpected status cannot be processed: " + status);
                 return errorResponse(Response.Status.BAD_REQUEST, "Unexpected status cannot be processed: " + status);
             }
         } catch (WrappedResponse ex) {
+            LOGGER.log(Level.SEVERE, "Unexpected error: " + ex.getMessage());
             return ex.getResponse();
         }
     }
@@ -779,7 +837,7 @@ public class Datasets extends AbstractApiBean {
                 if (StringUtils.isNotEmpty(uploadMethods) && uploadMethods.toUpperCase().contains("RSYNC")) {
                     AuthenticatedUser au = authenticationServiceBean.getAuthenticatedUser("dataverseAdmin");
                     JsonObjectBuilder jab = execCommand(
-                            new RequestRsyncScriptCommand(createDataverseRequest(au), ds, 90000));
+                            new RequestRsyncScriptCommand(createDataverseRequest(au), ds));
                 }
             }
             if (ds.getRsyncScript() != null) {
