@@ -40,16 +40,18 @@ public class FileRecordJobResource extends AbstractApiBean {
     @EJB
     DatasetServiceBean datasetService;
 
+    // todo: add optional query param of userid (depositing user versus superuser to execute)
+    // todo: require superuser to execute this endpoint
+    // todo: another endpoint for primary key as a path param?
+    // todo: use put instead of get?
     @GET
-    @Path("/dataset/files")
+    @Path("/datasets/files")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFilesystemImport(
-            @QueryParam("datasetId") String dsId,
-            @QueryParam("key") String key)
-    {
+    public Response getFilesystemImport(@QueryParam("doi") String doi, @QueryParam("key") String key) {
+
         try {
             try {
-                Dataset ds = datasetService.findByGlobalId(dsId);
+                Dataset ds = datasetService.findByGlobalId(doi);
                 if (ds != null) {
 
                     DataverseRequest req = createDataverseRequest(findAuthenticatedUserOrDie());
@@ -62,7 +64,7 @@ public class FileRecordJobResource extends AbstractApiBean {
 
                             System.out.println("Authenticated User: " + req.getUser().getIdentifier());
                             Properties props = new Properties();
-                            props.setProperty("datasetId", dsId);
+                            props.setProperty("datasetId", doi);
                             props.setProperty("userId", req.getUser().getIdentifier().replace("@",""));
                             JobOperator jo = BatchRuntime.getJobOperator();
                             jid = jo.start("FileSystemImportJob", props);
@@ -84,7 +86,7 @@ public class FileRecordJobResource extends AbstractApiBean {
 
                         } else {
                             return this.errorResponse(Response.Status.BAD_REQUEST,
-                                    "Error creating FilesystemImportJob with dataset with ID: " + dsId);
+                                    "Error creating FilesystemImportJob with dataset with ID: " + doi);
                         }
 
                     } else {
@@ -92,7 +94,7 @@ public class FileRecordJobResource extends AbstractApiBean {
                     }
 
                 } else {
-                    return this.errorResponse(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + dsId);
+                    return this.errorResponse(Response.Status.BAD_REQUEST, "Can't find dataset with ID: " + doi);
                 }
             } catch (WrappedResponse wr) {
                 return wr.getResponse();
