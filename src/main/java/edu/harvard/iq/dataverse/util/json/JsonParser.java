@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -95,7 +96,19 @@ public class JsonParser {
             dv.setDataverseTheme(theme);
             theme.setDataverse(dv);
         }
-        
+
+        if (jobj.containsKey("fileUploadMechanismsEnabled")) {
+            JsonArray mechs = jobj.getJsonArray("fileUploadMechanismsEnabled");
+            Set<String> mechsToPersist = new TreeSet<>();
+            for (JsonValue mech : mechs) {
+                JsonString jsonString = (JsonString) mech;
+                mechsToPersist.add(jsonString.getString());
+            }
+            if (!mechs.isEmpty()) {
+                dv.setFileUploadMechanisms(String.join(":", mechsToPersist));
+            }
+        }
+
         /*  We decided that subject is not user set, but gotten from the subject of the dataverse's
             datasets - leavig this code in for now, in case we need to go back to it at some point
         
