@@ -90,11 +90,20 @@ public class JsonParser {
             }
             dv.setDataverseContacts(dvContactList);
         }
-        
+
         if (jobj.containsKey("theme")) {
             DataverseTheme theme = parseDataverseTheme(jobj.getJsonObject("theme"));
             dv.setDataverseTheme(theme);
             theme.setDataverse(dv);
+        }
+
+        dv.setDataverseType(Dataverse.DataverseType.UNCATEGORIZED); // default
+        if (jobj.containsKey("dataverseType")) {
+            for (Dataverse.DataverseType dvtype : Dataverse.DataverseType.values()) {
+                if (dvtype.name().equals(jobj.getString("dataverseType"))) {
+                    dv.setDataverseType(dvtype);
+                }
+            }
         }
 
         if (jobj.containsKey("fileUploadMechanismsEnabled")) {
@@ -134,10 +143,10 @@ public class JsonParser {
             dv.setDataverseSubjects(dvSubjectList);
         }
         */
-                
+
         return dv;
     }
-    
+
     public DataverseTheme parseDataverseTheme(JsonObject obj) {
 
         DataverseTheme theme = new DataverseTheme();
@@ -230,7 +239,7 @@ public class JsonParser {
         dataset.setDoiSeparator(obj.getString("doiSeparator", null) == null ? settingsService.getValueForKey(SettingsServiceBean.Key.DoiSeparator) : obj.getString("doiSeparator"));
         dataset.setIdentifier(obj.getString("identifier",null));
 
-        DatasetVersion dsv = new DatasetVersion(); 
+        DatasetVersion dsv = new DatasetVersion();
         dsv.setDataset(dataset);
         dsv = parseDatasetVersion(obj.getJsonObject("datasetVersion"), dsv);
         LinkedList<DatasetVersion> versions = new LinkedList<>();
@@ -259,9 +268,9 @@ public class JsonParser {
             // if the existing datasetversion doesn not have an id
             // use the id from the json object.
             if (dsv.getId()==null) {
-                 dsv.setId(parseLong(obj.getString("id", null)));
+                dsv.setId(parseLong(obj.getString("id", null)));
             }
-           
+
             String versionStateStr = obj.getString("versionState", null);
             if (versionStateStr != null) {
                 dsv.setVersionState(DatasetVersion.VersionState.valueOf(versionStateStr));
@@ -273,7 +282,7 @@ public class JsonParser {
             dsv.setArchiveTime(parseTime(obj.getString("archiveTime", null)));
             // Terms of Use related fields
             TermsOfUseAndAccess terms = new TermsOfUseAndAccess();
-            terms.setTermsOfUse(obj.getString("termsOfUse", null));           
+            terms.setTermsOfUse(obj.getString("termsOfUse", null));
             terms.setTermsOfAccess(obj.getString("termsOfAccess", null));
             terms.setConfidentialityDeclaration(obj.getString("confidentialityDeclaration", null));
             terms.setSpecialPermissions(obj.getString("specialPermissions", null));
@@ -290,7 +299,7 @@ public class JsonParser {
             terms.setStudyCompletion(obj.getString("studyCompletion", null));
             terms.setLicense(parseLicense(obj.getString("license", null)));
             dsv.setTermsOfUseAndAccess(terms);
-            
+
             dsv.setDatasetFields(parseMetadataBlocks(obj.getJsonObject("metadataBlocks")));
 
             JsonArray filesJson = obj.getJsonArray("files");
@@ -308,12 +317,12 @@ public class JsonParser {
             throw new JsonParseException("Error parsing number:" + ex.getMessage(), ex);
         }
     }
-    
+
     private License parseLicense(String inString) {
         if (inString != null && inString.equalsIgnoreCase("CC0")) {
             return TermsOfUseAndAccess.License.CC0;
         }
-        return TermsOfUseAndAccess.License.NONE;       
+        return TermsOfUseAndAccess.License.NONE;
     }
 
     public List<DatasetField> parseMetadataBlocks(JsonObject json) throws JsonParseException {
@@ -329,7 +338,7 @@ public class JsonParser {
                 } catch (CompoundVocabularyException ex) {
                     DatasetFieldType fieldType = datasetFieldSvc.findByNameOpt(fieldJson.getString("typeName", ""));
                     if (lenient && (DatasetFieldConstant.geographicCoverage).equals(fieldType.getName())) {
-                        fields.add(remapGeographicCoverage( ex));                       
+                        fields.add(remapGeographicCoverage( ex));
                     } else {
                         // if not lenient mode, re-throw exception
                         throw ex;
@@ -341,7 +350,7 @@ public class JsonParser {
         convertKeywordsToSubjects(fields);
         return fields;
     }
-    
+
     public List<FileMetadata> parseFiles(JsonArray metadatasJson, DatasetVersion dsv) throws JsonParseException {
         List<FileMetadata> fileMetadatas = new LinkedList<>();
 
@@ -360,7 +369,7 @@ public class JsonParser {
                 fileMetadata.setDataFile(dataFile);
                 dataFile.getFileMetadatas().add(fileMetadata);
                 dataFile.setOwner(dsv.getDataset());
-                
+
                 if (dsv.getDataset().getFiles() == null) {
                     dsv.getDataset().setFiles(new ArrayList<>());
                 }
@@ -372,44 +381,44 @@ public class JsonParser {
 
         return fileMetadatas;
     }
-    
+
     public DataFile parseDataFile(JsonObject datafileJson) {
         DataFile dataFile = new DataFile();
-        
+
         Timestamp timestamp = new Timestamp(new Date().getTime());
         dataFile.setCreateDate(timestamp);
         dataFile.setModificationTime(timestamp);
         dataFile.setPermissionModificationTime(timestamp);
-        
+
         String contentType = datafileJson.getString("contentType", null);
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
         String storageIdentifier = datafileJson.getString("storageIdentifier");
         String md5 = datafileJson.getString("md5", null);
-        
+
         if (md5 == null) {
             md5 = "unknown";
         }
-        
+
         // TODO: 
         // unf (if available)... etc.?
-        
+
         dataFile.setContentType(contentType);
         dataFile.setStorageIdentifier(storageIdentifier);
         dataFile.setmd5(md5);
-        
+
         return dataFile;
     }
     /**
      * Special processing for GeographicCoverage compound field:
      * Handle parsing exceptions caused by invalid controlled vocabulary in the "country" field by
      * putting the invalid data in "otherGeographicCoverage" in a new compound value.
-     * 
+     *
      * @param ex - contains the invalid values to be processed
      * @return a compound DatasetField that contains the newly created values, in addition to 
      * the original valid values.
-     * @throws JsonParseException 
+     * @throws JsonParseException
      */
     private DatasetField remapGeographicCoverage(CompoundVocabularyException ex) throws JsonParseException{
         List<HashSet<FieldDTO>> geoCoverageList = new ArrayList<>();
@@ -437,9 +446,9 @@ public class JsonParser {
         }
         return geoCoverageField;
     }
-     
-    
-  
+
+
+
 
     public DatasetField parseField(JsonObject json) throws JsonParseException {
         if (json == null) {
@@ -448,7 +457,7 @@ public class JsonParser {
 
         DatasetField ret = new DatasetField();
         DatasetFieldType type = datasetFieldSvc.findByNameOpt(json.getString("typeName", ""));
-    
+
 
         if (type == null) {
             throw new JsonParseException("Can't find type '" + json.getString("typeName", "") + "'");
@@ -465,9 +474,9 @@ public class JsonParser {
         if (type.isControlledVocabulary() && !json.getString("typeClass").equals("controlledVocabulary")) {
             throw new JsonParseException("incorrect  typeClass for field " + json.getString("typeName", "") + ", should be controlledVocabulary");
         }
-       
+
         ret.setDatasetFieldType(type);
-               
+
         if (type.isCompound()) {
             List<DatasetFieldCompoundValue> vals = parseCompoundValue(type, json);
             for (DatasetFieldCompoundValue dsfcv : vals) {
@@ -490,7 +499,7 @@ public class JsonParser {
             }
             ret.setDatasetFieldValues(values);
         }
-        
+
         return ret;
     }
 
@@ -531,7 +540,7 @@ public class JsonParser {
                         filteredValues.add(compoundVal);
                     } else {
                         // save the value for our subject field
-                        if (!subjects.contains(cvv)) 
+                        if (!subjects.contains(cvv))
                         {
                             subjects.add(cvv);
                         }
@@ -545,15 +554,15 @@ public class JsonParser {
         if (subjects.size() > 0) {
             keywordField.setDatasetFieldCompoundValues(filteredValues);
 
-               DatasetField subjectField = new DatasetField();
+            DatasetField subjectField = new DatasetField();
             subjectField.setDatasetFieldType(type);
             for (ControlledVocabularyValue val : subjects) {
                 int order = 0;
-              
+
                 val.setDisplayOrder(order);
                 val.setDatasetFieldType(type);
                 order++;
-                
+
             }
 
             subjectField.setControlledVocabularyValues(subjects);
@@ -561,7 +570,7 @@ public class JsonParser {
         }
 
     }
-    
+
     public List<DatasetFieldCompoundValue> parseCompoundValue(DatasetFieldType compoundType, JsonObject json) throws JsonParseException {
         List<ControlledVocabularyException> vocabExceptions = new ArrayList<>();
         List<DatasetFieldCompoundValue> vals = new LinkedList<>();
@@ -578,13 +587,13 @@ public class JsonParser {
                     } catch(ControlledVocabularyException ex) {
                         vocabExceptions.add(ex);
                     }
-                    
+
                     if (f!=null) {
                         if (!compoundType.getChildDatasetFieldTypes().contains(f.getDatasetFieldType())) {
                             throw new JsonParseException("field " + f.getDatasetFieldType().getName() + " is not a child of " + compoundType.getName());
                         }
                         f.setParentDatasetFieldCompoundValue(cv);
-                            fields.add(f);
+                        fields.add(f);
                     }
                 }
                 if (!fields.isEmpty()) {
@@ -595,10 +604,10 @@ public class JsonParser {
                 order++;
             }
 
-           
+
 
         } else {
-            
+
             DatasetFieldCompoundValue cv = new DatasetFieldCompoundValue();
             List<DatasetField> fields = new LinkedList<>();
             JsonObject value = json.getJsonObject("value");
@@ -619,12 +628,12 @@ public class JsonParser {
                 cv.setChildDatasetFields(fields);
                 vals.add(cv);
             }
-      
-    }
+
+        }
         if (!vocabExceptions.isEmpty()) {
             throw new CompoundVocabularyException( "Invalid controlled vocabulary in compound field ", vocabExceptions, vals);
         }
-          return vals;
+        return vals;
     }
 
     public List<DatasetFieldValue> parsePrimitiveValue(JsonObject json) throws JsonParseException {
@@ -691,11 +700,11 @@ public class JsonParser {
     int parsePrimitiveInt(String str, int defaultValue) {
         return str == null ? defaultValue : Integer.parseInt(str);
     }
-    
+
     public String parseHarvestingClient(JsonObject obj, HarvestingClient harvestingClient) throws JsonParseException {
-        
+
         String dataverseAlias = obj.getString("dataverseAlias",null);
-        
+
         harvestingClient.setName(obj.getString("nickName",null));
         harvestingClient.setHarvestType(obj.getString("type",null));
         harvestingClient.setHarvestingUrl(obj.getString("harvestUrl",null));

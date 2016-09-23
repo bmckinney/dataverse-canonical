@@ -94,25 +94,25 @@ public class JsonPrinter {
                 .add("emailLastConfirmed", authenticatedUser.getEmailConfirmed())
                 .add("authenticationProviderId", authenticatedUser.getAuthenticatedUserLookup().getAuthenticationProviderId());
     }
-    
+
     public static JsonObjectBuilder json( RoleAssignment ra ) {
-		return jsonObjectBuilder()
-				.add("id", ra.getId())
-				.add("assignee", ra.getAssigneeIdentifier() )
-				.add("roleId", ra.getRole().getId() )
-				.add("_roleAlias", ra.getRole().getAlias())
-				.add("privateUrlToken", ra.getPrivateUrlToken())
-				.add("definitionPointId", ra.getDefinitionPoint().getId() );
-	}
-	
-	public static JsonArrayBuilder json( Set<Permission> permissions ) {
-		JsonArrayBuilder bld = Json.createArrayBuilder();
-		for ( Permission p : permissions ) {
-			bld.add( p.name() );
-		}
-		return bld;
-	}
-    
+        return jsonObjectBuilder()
+                .add("id", ra.getId())
+                .add("assignee", ra.getAssigneeIdentifier() )
+                .add("roleId", ra.getRole().getId() )
+                .add("_roleAlias", ra.getRole().getAlias())
+                .add("privateUrlToken", ra.getPrivateUrlToken())
+                .add("definitionPointId", ra.getDefinitionPoint().getId() );
+    }
+
+    public static JsonArrayBuilder json( Set<Permission> permissions ) {
+        JsonArrayBuilder bld = Json.createArrayBuilder();
+        for ( Permission p : permissions ) {
+            bld.add( p.name() );
+        }
+        return bld;
+    }
+
     public static JsonObjectBuilder json( RoleAssigneeDisplayInfo d ) {
         return jsonObjectBuilder()
                 .add("title", d.getTitle())
@@ -185,8 +185,9 @@ public class JsonPrinter {
                 .add("affiliation", dv.getAffiliation())
                 .add("dataverseContacts", json(dv.getDataverseContacts()))
                 .add("permissionRoot", dv.isPermissionRoot())
-                .add("fileUploadMechanismsEnabled", fileUploadMechanismsEnabledArray)
-                .add("description", dv.getDescription());
+                .add("description", dv.getDescription())
+                .add("dataverseType", dv.getDataverseType().name())
+                .add("fileUploadMechanismsEnabled", fileUploadMechanismsEnabledArray);
         if (dv.getOwner() != null) {
             bld.add("ownerId", dv.getOwner().getId());
         }
@@ -453,7 +454,7 @@ public class JsonPrinter {
     public static JsonObjectBuilder json(DataFile df) {
         return json(df, null);
     }
-    
+
     public static JsonObjectBuilder json(DataFile df, FileMetadata fileMetadata) {
         // File names are no longer stored in the DataFile entity; 
         // (they are instead in the FileMetadata (as "labels") - this way 
@@ -464,7 +465,7 @@ public class JsonPrinter {
         // *correct* file name - i.e., that it comes from the right version. 
         // (TODO...? L.A. 4.5, Aug 7 2016)
         String fileName = null;
-        
+
         if (fileMetadata != null) {
             fileName = fileMetadata.getLabel();
         } else if (df.getFileMetadata() != null) {
@@ -472,7 +473,7 @@ public class JsonPrinter {
             // version *you want*! (L.A.)
             fileName = df.getFileMetadata().getLabel();
         }
-        
+
         return jsonObjectBuilder()
                 .add("id", df.getId())
                 .add("filename", fileName)
@@ -555,12 +556,12 @@ public class JsonPrinter {
 
     public static JsonObjectBuilder json(AuthenticationProviderRow aRow) {
         return jsonObjectBuilder()
-                        .add("id", aRow.getId())
-                        .add("factoryAlias", aRow.getFactoryAlias() )
-                        .add("title", aRow.getTitle())
-                        .add("subtitle",aRow.getSubtitle())
-                        .add("factoryData", aRow.getFactoryData())
-                        .add("enabled", aRow.isEnabled())
+                .add("id", aRow.getId())
+                .add("factoryAlias", aRow.getFactoryAlias() )
+                .add("title", aRow.getTitle())
+                .add("subtitle",aRow.getSubtitle())
+                .add("factoryData", aRow.getFactoryData())
+                .add("enabled", aRow.isEnabled())
                 ;
     }
 
