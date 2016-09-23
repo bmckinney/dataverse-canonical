@@ -69,6 +69,8 @@ public class SystemConfig {
     private static String appVersionString = null; 
     private static String buildNumberString = null; 
     
+    private static final String JVM_TIMER_SERVER_OPTION = "dataverse.timerServer";
+    
     public String getVersion() {
         return getVersion(false);
     }
@@ -199,9 +201,28 @@ public class SystemConfig {
         String solrHostColonPort = settingsService.getValueForKey(SettingsServiceBean.Key.SolrHostColonPort, saneDefaultForSolrHostColonPort);
         return solrHostColonPort;
     }
-    
-    
-    
+
+    public int getMinutesUntilConfirmEmailTokenExpires() {
+        final int minutesInOneDay = 1440;
+        final int reasonableDefault = minutesInOneDay;
+        SettingsServiceBean.Key key = SettingsServiceBean.Key.MinutesUntilConfirmEmailTokenExpires;
+        String valueFromDatabase = settingsService.getValueForKey(key);
+        if (valueFromDatabase != null) {
+            try {
+                int intFromDatabase = Integer.parseInt(valueFromDatabase);
+                if (intFromDatabase > 0) {
+                    return intFromDatabase;
+                } else {
+                    logger.info("Returning " + reasonableDefault + " for " + key + " because value must be greater than zero, not \"" + intFromDatabase + "\".");
+                }
+            } catch (NumberFormatException ex) {
+                logger.info("Returning " + reasonableDefault + " for " + key + " because value must be an integer greater than zero, not \"" + valueFromDatabase + "\".");
+            }
+        }
+        logger.fine("Returning " + reasonableDefault + " for " + key);
+        return reasonableDefault;
+    }
+
     /**
      * The number of minutes for which a password reset token is valid. Can be
      * overridden by {@link #PASSWORD_RESET_TIMEOUT_IN_MINUTES}.
@@ -487,4 +508,24 @@ public class SystemConfig {
         return getTabularIngestSizeLimit();        
     }
 
+    public boolean isOAIServerEnabled() {
+        boolean defaultResponse = false;
+        return settingsService.isTrueForKey(SettingsServiceBean.Key.OAIServerEnabled, defaultResponse);
+    }
+    
+    public void enableOAIServer() {
+        settingsService.setValueForKey(SettingsServiceBean.Key.OAIServerEnabled, "true");
+    }
+    
+    public void disableOAIServer() {
+        settingsService.deleteValueForKey(SettingsServiceBean.Key.OAIServerEnabled);
+    }   
+    
+    public boolean isTimerServer() {
+        String optionValue = System.getProperty(JVM_TIMER_SERVER_OPTION);
+        if ("true".equalsIgnoreCase(optionValue)) {
+            return true;
+        }
+        return false;
+    }
 }
