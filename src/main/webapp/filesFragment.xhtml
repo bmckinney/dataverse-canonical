@@ -298,9 +298,9 @@
         <p:column class="col-file-metadata">
             <h:outputLink rendered="#{settingsWrapper.isTrueForKey(':ShowFileLandingPage', false)}"
                           value="/file.xhtml?fileId=#{fileMetadata.dataFile.id}&#38;datasetVersionId=#{DatasetPage.workingVersion.id}">
-                <h:outputText id="fileNameLink" value="#{fileMetadata.dataFile.getDisplayName()}" style="display:block;font-weight:bold;"/>
+                <h:outputText id="fileNameLink" value="#{fileMetadata.dataFile.storageIdentifier}" style="display:block;font-weight:bold;"/>
             </h:outputLink>
-            <h:outputText id="fileName" value="#{fileMetadata.dataFile.getDisplayName()}" style="display:block;font-weight:bold;"
+            <h:outputText id="fileName" value="#{fileMetadata.dataFile.storageIdentifier}" style="display:block;font-weight:bold;"
                           rendered="#{!settingsWrapper.isTrueForKey(':ShowFileLandingPage',  false)}"/>
             <!-- TYPE + SIZE + DATE + MD5 -->
             <div class="text-muted small">
