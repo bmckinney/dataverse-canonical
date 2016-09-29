@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
@@ -49,7 +50,9 @@ import org.apache.commons.lang.StringUtils;
 
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.brief;
 import java.io.StringReader;
+import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
@@ -84,8 +87,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.json;
 import static edu.harvard.iq.dataverse.util.json.JsonPrinter.toJsonArray;
-import java.sql.Timestamp;
-import java.util.Date;
 
 /**
  * A REST API for dataverses.
@@ -96,6 +97,9 @@ import java.util.Date;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
+
+    @EJB
+    PermissionServiceBean permissionService;
 
     @POST
     public Response addRoot( String body ) {
@@ -237,7 +241,9 @@ public class Dataverses extends AbstractApiBean {
                         ds.setAuthority(datasetAuthority);
                         ds.setProtocol(datasetProtocol);
                         ds.setIdentifier(datasetIdentifier);
-                        // setGlobalIdCreateTime to anything ("now") avoid "This dataset may not be published because it has not been registered. Please contact Dataverse Support for assistance."
+                        // setGlobalIdCreateTime to anything ("now") avoid
+                        // "This dataset may not be published because it has not been registered.
+                        // Please contact Dataverse Support for assistance."
                         ds.setGlobalIdCreateTime(new Timestamp(new Date().getTime()));
                     } else {
                         return errorResponse(Status.BAD_REQUEST,
@@ -731,6 +737,42 @@ public class Dataverses extends AbstractApiBean {
         ExplicitGroup eg = execCommand(new GetExplicitGroupCommand(req, dv, groupIdtf) );
         if ( eg == null ) throw new WrappedResponse( notFound("Can't find " + groupIdtf + " in dataverse " + dv.getId()));
         return eg;
+    }
+
+    @GET
+    @Path("{identifier}/uploadmechanisms")
+    public Response listUploadMechanisms( @PathParam("identifier") String dvIdtf ) {
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder fileUploadMechanismsEnabledArray = Json.createArrayBuilder();
+            String fileUploadMechanismsEnabledString = dv.getFileUploadMechanisms();
+            if (fileUploadMechanismsEnabledString != null) {
+                for (String mech : fileUploadMechanismsEnabledString.split(":")) {
+                    fileUploadMechanismsEnabledArray.add(mech);
+                }
+            }
+            return okResponse(fileUploadMechanismsEnabledArray);
+        } catch (WrappedResponse wr) {
+            return wr.refineResponse( "Error listing file upload mechanisms for dataverse " + dvIdtf + ":");
+        }
+    }
+
+    @POST
+    @Path("{identifier}/uploadmechanisms")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setUploadMechanisms(@PathParam("identifier")String dvIdtf, String mechs ) {
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(findAuthenticatedUserOrDie());
+            if (permissionService.requestOn(req, dv).has(Permission.EditDataverse)) {
+                dv.setFileUploadMechanisms(mechs);
+                return okResponse("File upload mechanisms of dataverse " + dvIdtf + " updated.");
+            } else {
+                return errorResponse(Status.FORBIDDEN, "Not authorized");
+            }
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
     }
 
     @GET
