@@ -1,5 +1,8 @@
 (function() {
 
+    var current_script = document.getElementById("pv-widget");
+    var pdb = current_script.getAttribute("data-pdb");
+
     // css
     var css_bootstrap = document.createElement('link');
     css_bootstrap.setAttribute("type","text/css");
@@ -13,17 +16,37 @@
     css_font_awesome.setAttribute("href","https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css");
     (document.getElementsByTagName("head")[0] || document.documentElement).appendChild(css_font_awesome);
 
+    var css_pv = document.createElement('link');
+    css_pv.setAttribute("type","text/css");
+    css_pv.setAttribute("rel","stylesheet");
+    css_pv.setAttribute("href","https://dv.sbgrid.org/resources/css/pv.css");
+    (document.getElementsByTagName("head")[0] || document.documentElement).appendChild(css_pv);
+
+    // wrapper div
+    var wrapper_div = document.createElement('div');
+    wrapper_div.setAttribute("id","wrapper");
+    current_script.parentNode.insertBefore(wrapper_div, current_script.nextSibling);
+
+    var clear_div = document.createElement('div');
+    clear_div.setAttribute("id","cleared");
+
     // insert widget div after this script
     var widget_div = document.createElement('div');
-    widget_div.setAttribute("id","viewer");
+    widget_div.setAttribute("id","gl");
     widget_div.setAttribute("scoped","scoped");
-    var current_script = document.getElementById("pv-widget");
-    current_script.parentNode.insertBefore(widget_div, current_script.nextSibling);
 
     // add inspector menu
     var menu_div = document.createElement('div');
     menu_div.setAttribute("id","inspector");
     menu_div.setAttribute("scoped","scoped");
+
+    var structure_heading = document.createElement('h1');
+    var structure_text = document.createTextNode(pdb + " Structure");
+    structure_heading.appendChild(structure_text);
+    menu_div.appendChild(structure_heading);
+
+    var hrule = document.createElement('hr');
+    menu_div.appendChild(hrule);
 
     var heading = document.createElement('h2');
     var heading_text = document.createTextNode("Choose Style:");
@@ -76,7 +99,10 @@
 
     menu_div.appendChild(menu_list);
 
-    widget_div.parentNode.insertBefore(menu_div, widget_div.nextSibling);
+    //widget_div.parentNode.insertBefore(menu_div, widget_div.nextSibling);
+    wrapper_div.appendChild(widget_div);
+    wrapper_div.appendChild(menu_div);
+    wrapper_div.appendChild(clear_div);
 
     var proteinViewer;
     if (window.proteinViewer === undefined) {
@@ -125,10 +151,10 @@
         var ligand = structure.select({rnames : ['RVP', 'SAH']});
         proteinViewer.ballsAndSticks('ligand', ligand);
         proteinViewer.cartoon('protein', structure);
+        proteinViewer.autoZoom();
     }
 
     function load(pdbid) {
-        console.log("inside load...");
         pdbid = pdbid.toLowerCase();
         var folder = pdbid.charAt(1).concat(pdbid.charAt(2));
         var url = 'pdb/' + folder + '/pdb' + pdbid + '.ent.gz';
@@ -138,6 +164,30 @@
             proteinViewer.centerOn(structure);
         });
     }
+    function lines() {
+        proteinViewer.clear();
+        proteinViewer.lines('structure', structure);
+    }
+    function cartoon() {
+        proteinViewer.clear();
+        proteinViewer.cartoon('structure', structure, { color: color.ssSuccession() });
+    }
+    function lineTrace() {
+        proteinViewer.clear();
+        proteinViewer.lineTrace('structure', structure);
+    }
+    function sline() {
+        proteinViewer.clear();
+        proteinViewer.sline('structure', structure);
+    }
+    function tube() {
+        proteinViewer.clear();
+        proteinViewer.tube('structure', structure);
+    }
+    function trace() {
+        proteinViewer.clear();
+        proteinViewer.trace('structure', structure);
+    }
 
     function test() {
         load('1r6a');
@@ -145,13 +195,21 @@
 
     function main() {
         var options = {
-            width: 300,
-            height: 300,
+            width: 800,
+            height: 600,
             antialias: true,
             quality : 'medium'
         };
-        proteinViewer = pv.Viewer(document.getElementById('viewer'), options);
-        test();
+        proteinViewer = pv.Viewer(document.getElementById('gl'), options);
+        load(pdb);
     }
+
+    document.getElementById('cartoon').onclick = cartoon;
+    document.getElementById('line-trace').onclick = lineTrace;
+    document.getElementById('preset').onclick = preset;
+    document.getElementById('lines').onclick = lines;
+    document.getElementById('trace').onclick = trace;
+    document.getElementById('sline').onclick = sline;
+    document.getElementById('tube').onclick = tube;
 
 })();

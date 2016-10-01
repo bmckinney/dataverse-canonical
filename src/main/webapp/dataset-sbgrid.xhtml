@@ -562,10 +562,9 @@
 
                         <p:tab id="visualizationTab" title="Visualization"
                                rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
-                            <iframe src ="visualizationFragment.xhtml" id="info" class="iframe" name="info" height="500"
-                                    width="1100" style="border:none"
-                                    data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}">
-                            </iframe>
+                            <script id="pv-widget"
+                                    data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}"
+                                    src="#{resource['js/pv/widget_script.js']}?version=#{systemConfig.getVersion()}" type="text/javascript"></script>
                         </p:tab>
 
                         <!-- 4.2.1: the 3 tabs below - metadata, terms and versions: these account for ~100 queries total -->
