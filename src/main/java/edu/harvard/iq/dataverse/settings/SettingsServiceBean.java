@@ -33,6 +33,8 @@ public class SettingsServiceBean {
      * So there.
      */
     public enum Key {
+        FooterCopyright,
+        FileFixityChecksumAlgorithm,
         MinutesUntilConfirmEmailTokenExpires,
         /**
          * For example, https://datacapture.example.org
