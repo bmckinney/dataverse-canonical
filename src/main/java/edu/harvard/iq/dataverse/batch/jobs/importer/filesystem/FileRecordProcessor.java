@@ -128,7 +128,8 @@ public class FileRecordProcessor implements ItemProcessor {
                 datafile.setPermissionModificationTime(new Timestamp(new Date().getTime()));
                 datafile.setOwner(dataset);
                 datafile.setIngestDone();
-                datafile.setmd5("Unknown");
+                datafile.setChecksumType(DataFile.ChecksumType.SHA1);
+                datafile.setChecksumValue("Unknown");
 
                 // set metadata and add to latest version
                 FileMetadata fmd = new FileMetadata();
