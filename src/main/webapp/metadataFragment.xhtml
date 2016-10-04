@@ -11,7 +11,7 @@
         <o:importFunctions type="edu.harvard.iq.dataverse.util.MarkupChecker" />
         <ui:repeat value="#{metadataBlocks}"
                    var="metadataBlockVal" varStatus="block">
-            <div class="panel panel-default">
+            <div class="panel panel-default" jsf:rendered="#{metadataBlockVal.key.name != 'sbgridReproc'}">
                 <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
                     #{metadataBlockVal.key.displayName} &#160;<span class="glyphicon #{block.first?'glyphicon-chevron-up':'glyphicon-chevron-down'}"/>
                 </div>
@@ -88,7 +88,8 @@
             <ui:repeat value="#{metadataBlocks}" var="metadataBlockVal" varStatus="block">
                 <div class="panel panel-default" jsf:rendered="#{(editMode == 'METADATA' or metadataBlockVal.key.displayOnCreate or !metadataBlockVal.key.isEmpty()
                                                                  or metadataBlockVal.key.isHasRequired())
-                                                                 or (!datasetPage)}">
+                                                                 or (!datasetPage)
+                                                                 and (metadataBlockVal.key.name != 'sbgridReproc')}">
                     <div data-toggle="collapse" data-target="#panelCollapse#{block.index}" class="panel-heading text-info">
                         #{metadataBlockVal.key.displayName} <span class="glyphicon #{block.first || editMode == 'CREATE'  ? 'glyphicon-chevron-up' : 'glyphicon-chevron-down'}"/>
                     </div>
