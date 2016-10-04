@@ -8,6 +8,7 @@ package edu.harvard.iq.dataverse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,13 @@ public class DatasetFieldCompoundValue implements Serializable {
 
     public List<DatasetField> getChildDatasetFields() {
         return childDatasetFields;
+    }
+
+    public Map<String,String> getChildDatasetFieldsMap() {
+        Map<String,String> map = new HashMap<>();
+        for (DatasetField dsf : childDatasetFields)
+            map.put(dsf.getDatasetFieldType().getName(), dsf.getValue());
+        return map;
     }
 
     public void setChildDatasetFields(List<DatasetField> childDatasetFields) {

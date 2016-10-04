@@ -1,0 +1,215 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <div class="panel-group" >
+        <ui:repeat value="#{metadataBlocks}" var="mb">
+            <div class="panel panel-default" jsf:rendered="#{mb.key.name == 'sbgridReproc'}">
+                <div class="panel-heading text-info" style="color: #31708F;;">
+                    #{mb.key.displayName}
+                </div>
+                <div id="panelCollapseReproc">
+                    <div class="panel-body metadata-panel-body">
+                        <ui:repeat value="#{mb.value}" var="dsf">
+                            <ui:repeat value="#{dsf.datasetFieldCompoundValues}" var="cval" varStatus="status">
+
+                                <!-- BEGIN: SINGLE REPROCESSING RESULT -->
+                                <ui:repeat value="#{cval.getChildDatasetFieldsMap()}" var="map">
+
+                                    <div class="command row">
+                                        <a data-toggle="collapse" href="#item#{status.index}">
+                                            <i class="col-xs-1 fa fa-terminal terminal"></i>
+                                            <span style="margin-bottom: 8px; font-size: 18px; color: #{map.get('reprocSpacegroup') != null ? 'green' : 'red'};"
+                                                  class="cspan col-xs-10 tooltiplabel text-info">
+                                                  &gt;_ #{map.get('reprocCommand')} -ispyb_xml_out apc.xml
+                                            </span>
+                                        </a>
+                                    </div>
+
+                                    <div id="item#{status.index}" class="row collapse">
+
+                                        <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                            <p>Version:</p>
+                                        </div>
+                                        <div class="dataset-info-text col-md-7 col-sm-12">
+                                            <p>#{map.get('reprocVersion')}</p>
+                                        </div>
+
+                                        <!-- reprocessing failed -->
+                                        <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12"
+                                             jsf:rendered="#{map.get('reprocSpacegroup') == null}">
+                                            <p style="font-size: 20px; color: red; padding-bottom: 15px;">Reprocessing failed.</p>
+                                        </div>
+
+                                        <!-- reprocessing succeeded -->
+                                        <div jsf:rendered="#{map.get('reprocSpacegroup') != null}">
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Project:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocProject')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Crystal:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocCrystal')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Sequence Length:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocSequenceLength')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Wavelength:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocWavelengthText')} - #{map.get('reprocWavelengthNumber')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Sweep:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocSweep')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Files:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocFiles')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Images:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocImagesStart')} - #{map.get('reprocImagesEnd')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Beam:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>(#{map.get('reprocBeamX1')}, #{map.get('reprocBeamY1')}) -&gt;
+                                                    (#{map.get('reprocBeamX2')}, #{map.get('reprocBeamY2')})</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Distance:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocDistanceStart')} -&gt;
+                                                    #{map.get('reprocDistanceEnd')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label col-md-4 col-md-offset-1 col-sm-12">
+                                                <p>Spacegroup:</p>
+                                            </div>
+                                            <div class="dataset-info-text col-md-7 col-sm-12">
+                                                <p>#{map.get('reprocSpacegroup')}</p>
+                                            </div>
+
+                                            <div class="dataset-info-label for-text col-md-8 col-md-offset-1 col-sm-12"><p>For #{map.get('reprocForText')}:</p></div>
+
+                                            <div class="row">
+                                                <div class="col-md-10 col-md-offset-1">
+                                                    <table class="table reproc-table">
+                                                        <tr>
+                                                            <th></th>
+                                                            <th>ALL</th>
+                                                            <th>LOW</th>
+                                                            <th>HIGH</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>High resolution limit</th>
+                                                            <td>#{map.get('reprocHighResAll')}</td>
+                                                            <td>#{map.get('reprocHighResLow')}</td>
+                                                            <td>#{map.get('reprocHighResHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Low resolution limit</th>
+                                                            <td>#{map.get('reprocLowResAll')}</td>
+                                                            <td>#{map.get('reprocLowResLow')}</td>
+                                                            <td>#{map.get('reprocLowResHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Completeness</th>
+                                                            <td>#{map.get('reprocCompletenessAll')}</td>
+                                                            <td>#{map.get('reprocCompletenessLow')}</td>
+                                                            <td>#{map.get('reprocCompletenessHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Multiplicity</th>
+                                                            <td>#{map.get('reprocMultiplicityAll')}</td>
+                                                            <td>#{map.get('reprocMultiplicityLow')}</td>
+                                                            <td>#{map.get('reprocMultiplicityHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>I/sigma</th>
+                                                            <td>1#{map.get('reprocISigmaAll')}</td>
+                                                            <td>#{map.get('reprocISigmaLow')}</td>
+                                                            <td>#{map.get('reprocISigmaHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Rmerge</th>
+                                                            <td>#{map.get('reprocRMergeAll')}</td>
+                                                            <td>#{map.get('reprocRMergeLow')}</td>
+                                                            <td>#{map.get('reprocRMergeHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>CC half</th>
+                                                            <td>#{map.get('reprocCCHalfAll')}</td>
+                                                            <td>#{map.get('reprocCCHalfLow')}</td>
+                                                            <td>#{map.get('reprocCCHalfHIgh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Anomalous completeness</th>
+                                                            <td>#{map.get('reprocAnomalousCompletenessAll')}</td>
+                                                            <td>#{map.get('reprocAnomalousCompletenessLow')}</td>
+                                                            <td>#{map.get('reprocAnomalousCompletenessHigh')}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Anomalous multiplicity</th>
+                                                            <td>#{map.get('reprocAnomalousMultiplicityAll')}</td>
+                                                            <td>#{map.get('reprocAnomalousMultiplicityLow')}</td>
+                                                            <td>#{map.get('reprocAnomalousMultiplicityHigh')}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-10 col-md-offset-1">
+                                                    <table class="table reproc-table">
+                                                        <tr>
+                                                            <th>Cell</th>
+                                                            <td>#{map.get('reprocCellLength1')}</td>
+                                                            <td>#{map.get('reprocCellLength2')}</td>
+                                                            <td>#{map.get('reprocCellLength3')}</td>
+                                                            <td>#{map.get('reprocCellAngle1')}</td>
+                                                            <td>#{map.get('reprocCellAngle1')}</td>
+                                                            <td>#{map.get('reprocCellAngle1')}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- END: SINGLE REPROCESSING RESULT -->
+
+                                </ui:repeat>
+                            </ui:repeat>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </div>
+        </ui:repeat>
+    </div>
+</ui:composition>

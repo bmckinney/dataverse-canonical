@@ -409,6 +409,15 @@
                 </div>
                 <!-- END View editMode -->
 
+                <!-- BEGIN REPROC -->
+                <div id="reproc" jsf:rendered="#{empty DatasetPage.editMode}">
+                    <ui:include src="reprocFragment.xhtml">
+                        <ui:param name="metadataBlocks" value="#{DatasetPage.datasetVersionUI.metadataBlocksForView.entrySet().toArray()}"/>
+                        <ui:param name="globalId" value="#{DatasetPage.dataset.globalId}"/>
+                    </ui:include>
+                </div>
+                <!-- END REPROC -->
+
                 <!-- Create/Edit editMode -->
                 <ui:fragment rendered="#{DatasetPage.editMode == 'METADATA' or DatasetPage.editMode == 'CREATE'}">
                     <div class="form-group">
