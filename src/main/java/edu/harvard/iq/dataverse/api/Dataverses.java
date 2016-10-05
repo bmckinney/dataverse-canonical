@@ -6,6 +6,7 @@ import edu.harvard.iq.dataverse.DatasetFieldType;
 import edu.harvard.iq.dataverse.DatasetVersion;
 import edu.harvard.iq.dataverse.Dataverse;
 import edu.harvard.iq.dataverse.DataverseContact;
+import edu.harvard.iq.dataverse.PermissionServiceBean;
 import edu.harvard.iq.dataverse.api.imports.ImportUtil;
 import edu.harvard.iq.dataverse.authorization.DataverseRole;
 import edu.harvard.iq.dataverse.DvObject;
@@ -96,6 +97,9 @@ import java.util.Date;
 public class Dataverses extends AbstractApiBean {
 
     private static final Logger LOGGER = Logger.getLogger(Dataverses.class.getName());
+
+    @EJB
+    PermissionServiceBean permissionService;
 
     @POST
     public Response addRoot( String body ) {
@@ -771,6 +775,42 @@ public class Dataverses extends AbstractApiBean {
             response.add("datasets that the " + dv.getAlias() + " has linked to", datasetsThisDvHasLinkedToBuilder);
             return okResponse(response);
 
+        } catch (WrappedResponse wr) {
+            return wr.getResponse();
+        }
+    }
+
+    @GET
+    @Path("{identifier}/uploadmechanisms")
+    public Response listUploadMechanisms( @PathParam("identifier") String dvIdtf ) {
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            JsonArrayBuilder fileUploadMechanismsEnabledArray = Json.createArrayBuilder();
+            String fileUploadMechanismsEnabledString = dv.getFileUploadMechanisms();
+            if (fileUploadMechanismsEnabledString != null) {
+                for (String mech : fileUploadMechanismsEnabledString.split(":")) {
+                    fileUploadMechanismsEnabledArray.add(mech);
+                }
+            }
+            return okResponse(fileUploadMechanismsEnabledArray);
+        } catch (WrappedResponse wr) {
+            return wr.refineResponse( "Error listing file upload mechanisms for dataverse " + dvIdtf + ":");
+        }
+    }
+
+    @POST
+    @Path("{identifier}/uploadmechanisms")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setUploadMechanisms(@PathParam("identifier")String dvIdtf, String mechs ) {
+        try {
+            Dataverse dv = findDataverseOrDie(dvIdtf);
+            DataverseRequest req = createDataverseRequest(findAuthenticatedUserOrDie());
+            if (permissionService.requestOn(req, dv).has(Permission.EditDataverse)) {
+                dv.setFileUploadMechanisms(mechs);
+                return okResponse("File upload mechanisms of dataverse " + dvIdtf + " updated.");
+            } else {
+                return errorResponse(Status.FORBIDDEN, "Not authorized");
+            }
         } catch (WrappedResponse wr) {
             return wr.getResponse();
         }
