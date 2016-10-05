@@ -570,7 +570,8 @@
                         </p:tab>
 
                         <p:tab id="visualizationTab" title="Visualization"
-                               rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode'))}">
+                               rendered="#{!empty DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')) and
+                               (empty DatasetPage.editMode)}">
                             <script id="pv-widget"
                                     data-pdb="#{DatasetPage.datasetVersionUI.datasetVersion.getDatasetField(datasetFieldServiceBean.findByName('refinedStructurePDBCode')).value}"
                                     src="#{resource['js/pv/widget_script.js']}?version=#{systemConfig.getVersion()}" type="text/javascript"></script>
