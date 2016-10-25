@@ -60,6 +60,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 /**
  * Batch File System Import Job Integration Tests
+ *
+ * Gothchas:
+ *
+ * - if you are testing from a dev server rebuilt from scratch, edit permissions such that:
+ *   "Anyone with a Dataverse account can add sub dataverses and datasets"
+ *
  */
 public class FileRecordJobIT {
 
@@ -127,20 +133,20 @@ public class FileRecordJobIT {
             System.out.println("TOKEN: " + token);
             // create dataverse
             given().body("{" +
-                        "    \"name\": \"" + testName + "\"," +
-                        "    \"alias\": \"" + testName + "\"," +
-                        "    \"affiliation\": \"Test-Driven University\"," +
-                        "    \"dataverseContacts\": [" +
-                        "        {" +
-                        "            \"contactEmail\": \"test@example.com\"" +
-                        "        }," +
-                        "        {" +
-                        "            \"contactEmail\": \"test@example.org\"" +
-                        "        }" +
-                        "    ]," +
-                        "    \"permissionRoot\": true," +
-                        "    \"description\": \"test Description.\"" +
-                        "}")
+                    "    \"name\": \"" + testName + "\"," +
+                    "    \"alias\": \"" + testName + "\"," +
+                    "    \"affiliation\": \"Test-Driven University\"," +
+                    "    \"dataverseContacts\": [" +
+                    "        {" +
+                    "            \"contactEmail\": \"test@example.com\"" +
+                    "        }," +
+                    "        {" +
+                    "            \"contactEmail\": \"test@example.org\"" +
+                    "        }" +
+                    "    ]," +
+                    "    \"permissionRoot\": true," +
+                    "    \"description\": \"test Description.\"" +
+                    "}")
                     .contentType(ContentType.JSON).request()
                     .post("/api/dataverses/:root?key=" + token)
                     .then().assertThat().statusCode(201);
@@ -213,7 +219,7 @@ public class FileRecordJobIT {
             String file1 =  "testfile.txt";
             String file2 = "subdir/testfile.txt";
             File file = createTestFile(dsDir, file1, 0.25);
-           if (file != null) {
+            if (file != null) {
                 FileUtils.copyFile(file, new File(dsDir + file2));
             } else {
                 System.out.println("Unable to copy file: " + dsDir + file2);
@@ -264,15 +270,15 @@ public class FileRecordJobIT {
 
             // test the reporting apis
             given()
-                .header(props.getProperty("api.token.http.header"), token)
-                .get(props.getProperty("job.status.api") + job.getId())
-                .then().assertThat()
-                .body("status", equalTo("COMPLETED"));
+                    .header(props.getProperty("api.token.http.header"), token)
+                    .get(props.getProperty("job.status.api") + job.getId())
+                    .then().assertThat()
+                    .body("status", equalTo("COMPLETED"));
             List<Integer> ids =  given()
-                        .header(props.getProperty("api.token.http.header"), token)
-                        .get("/api/batch/jobs/")
-                        .then().extract().jsonPath()
-                        .getList("jobs.id");
+                    .header(props.getProperty("api.token.http.header"), token)
+                    .get("/api/batch/jobs/")
+                    .then().extract().jsonPath()
+                    .getList("jobs.id");
             assertTrue(ids.contains((int)job.getId()));
 
         } catch (Exception e) {
@@ -352,8 +358,8 @@ public class FileRecordJobIT {
 
             // confirm checksums were imported
             List<String> checksums = new ArrayList<>();
-            checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.md5"));
-            checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.md5"));
+            checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value"));
+            checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value"));
             assert(checksums.contains(checksum1));
             assert(checksums.contains(checksum2));
 
@@ -420,8 +426,8 @@ public class FileRecordJobIT {
             filenames.add(dsPath.getString("data.latestVersion.files[1].dataFile.filename"));
             assert(filenames.contains("testfile1.txt"));
             assert(filenames.contains("testfile2.txt"));
-            assert(dsPath.getString("data.latestVersion.files[0].dataFile.md5").equalsIgnoreCase("unknown"));
-            assert(dsPath.getString("data.latestVersion.files[1].dataFile.md5").equalsIgnoreCase("unknown"));
+            assert(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value").equalsIgnoreCase("unknown"));
+            assert(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value").equalsIgnoreCase("unknown"));
 
         } catch (Exception e) {
             System.out.println("Error testChecksumImportMissingManifest: " + e.getMessage());
@@ -499,8 +505,8 @@ public class FileRecordJobIT {
             assert(filenames.contains("testfile2.txt"));
             // confirm one checksums was imported, one not
             List<String> checksums = new ArrayList<>();
-            checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.md5"));
-            checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.md5"));
+            checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value"));
+            checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value"));
             assert(checksums.contains(checksum1));
             assert(checksums.contains("Unknown"));
 
@@ -583,8 +589,8 @@ public class FileRecordJobIT {
             assert(filenames.contains("testfile2.txt"));
             // confirm checksums were imported
             List<String> checksums = new ArrayList<>();
-            checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.md5"));
-            checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.md5"));
+            checksums.add(dsPath.getString("data.latestVersion.files[0].dataFile.checksum.value"));
+            checksums.add(dsPath.getString("data.latestVersion.files[1].dataFile.checksum.value"));
             assert(checksums.contains(checksum1));
             assert(checksums.contains(checksum2));
 
@@ -763,7 +769,7 @@ public class FileRecordJobIT {
                 }
             }
         }catch (InterruptedException ie) {
-           System.out.println(ie.getMessage());
+            System.out.println(ie.getMessage());
             ie.printStackTrace();
         }
         return json;
@@ -791,11 +797,11 @@ public class FileRecordJobIT {
     private void updateDatasetJsonPath() {
         System.out.println("API: " + props.getProperty("dataset.api") + dsGlobalId);
         dsPath = given()
-            .header(props.getProperty("api.token.http.header"), token)
-            .contentType(ContentType.JSON)
-            .get(props.getProperty("dataset.api") + dsGlobalId)
-            .then().assertThat().statusCode(200)
-            .extract().jsonPath();
+                .header(props.getProperty("api.token.http.header"), token)
+                .contentType(ContentType.JSON)
+                .get(props.getProperty("dataset.api") + dsGlobalId)
+                .then().assertThat().statusCode(200)
+                .extract().jsonPath();
     }
 
 }
