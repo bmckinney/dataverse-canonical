@@ -5,7 +5,10 @@
     <groupId>edu.harvard.iq</groupId>
     <artifactId>dataverse</artifactId>
     <version>4.5.1</version>
-    <packaging>war</packaging>
+    <modules>
+        <module>sbgrid</module>
+    </modules>
+    <packaging>pom</packaging>
 
     <name>dataverse</name>
 
@@ -495,8 +498,8 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.7.5.201505241946</version>
                 <configuration>
-                    <destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
-                    <datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
+                    <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
+                    <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
                 </configuration>
                 <executions>
                     <execution>
